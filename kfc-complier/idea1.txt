@@ -1,0 +1,115 @@
+2λa 0 b 0
+3(a 0 b) 0
+1a 1b 1c 1d
+
+lambda = sign | func | call
+sign = (1x)+ 0
+func = 2 lambda
+call = 3 lambda lambda
+
+-------------
+
+(λa.a b)
+3	2	100	100	110
+130	120	1110100	1110100	1111100
+2 130	2 120	2 a	2 a	2 b
+c f 1 1 b
+
+c	λz.λw.(P (z w)) = λz.λw.(z w)
+f	λx.(P λa.x) = λx.(λz.λw.(z w) λa.x) = λx.λw.(λa.x w)
+a	(P a) = (λx.λw.(λa.x w) a) = λw.(λa.a w)
+a	(P a) = (λw.(λa.a w) a) = λa.a
+b	(P b) = (λa.a b)
+
+--------------
+
+λa.λb.(a b)
+f f c 0 1
+
+f a	λx.(P λa.x) = λx.(λn.n λa.x) = λx.λa.x
+f	λy.(P λi.y) = λx.λa.x
+f b	λy.(P λb.y) = λy.(λx.λa.x λb.y) = λy.λa.λb.y
+c	λz.λw.(P (z w)) = λz.λw.(λy.λa.λb.y (z w)) = λz.λw.λa.λb.(z w)
+a	(P a) = (λz.λw.λa.λb.(z w) a) = λw.λa.λb.(a w)
+b	(P b) = (λw.λa.λb.(a w) b) = λa.λb.(a b)
+
+--------------
+
+true = \x.\y.x
+false = \x.\y.y
+and = \p.\q.p q p
+or = \p.\q.p p q
+not = \p.p false true
+Yc = λp.(λf.λa.((p (f f)) a))(λf.λa.((p (f f)) a))
+0 = \f.\x.x
+1 = \f.\x.(f x)
+2 = \f.\x.(f (f x))
+3 = \f.\x.(f (f (f x)))
+\a.\b.b
+
+
+--------------
+
+L0 = \T.T \F.F 0
+L1 = \T.T \F.(F a) 1
+L2 = \T.T \F.((F a) b) 2
+L3 = \T.T \F.(((F a) b) c) 3
+\F.(((F a) b) c)
+
+
+push_head = \L.\x.\T.T (L former (F x)) (succ (L latter))
+push_tail = \L.\x.\F.((L F) x)
+delete_head = \L.\F.(L \x.F)
+#reverse = \L.\F.(L )
+n+1_params_fn = \n.(n (λa.λb.a))
+many_params_fn = ((Y (\s.\r.\a.(s (succ r)))) 0)
+
+\a.(a \b.(b a))
+f c 0 f c 1 0
+
+f	\A.			\a.(A L)
+c	\B.\C.		\a.((B L) (C L))		c = \P.\X.\Y.(P \L.((X L) (Y L)))
+0	\C.			\a.(a (C L))			0 = \P.(P \L.getL L 0)
+f	\D.			\a.(a \b.(D L))			f = \P.\D.(P \L.\x.(D (push L x)))
+c	\E.\F.		\a.(a \b.((E L) (F L)))
+1	\F.			\a.(a \b.(b (F L)))
+0				\a.(a \b.(b a))
+
+--------------
+
+(\a.(\b.b a) \a.a)
+c f c f 1 0 f 0
+
+c	\A.\B.		((A L) (B L))				c
+f	\C.\B.		(\a.(C L) (B L))			ca
+c	\D.\E.\B.	(\a.((D L) (E L)) (B L))	cac
+f	\F.\E.\B.	(\a.(\b.(F L) (E L)) (B L))	cacb
+1	\E.\B.		(\a.(\b.b (E L)) (B L))		cac
+0	\B.			(\a.(\b.b a) (B L))			c
+f	\G.			(\a.(\b.b a) (\a.(G L)))	ca
+0				(\a.(\b.b a) (\a.a))		
+
+f = λP.λx.(P λa.x)
+c = λP.λz.λw.(P (z w))
+* = λP.(P *)
+
+a = λs.λr.λn.(s (n r))
+
+
+
+--------------
+
+l = λf.(((f a) b) c)
+l[0] = (l λa.λb.λc.a) = (λf.(((f a) b) c) λa.λb.λc.a)
+
+
+2 = \f.\x.(f (f x))
+plus = \a.\b.\F.\X.((a F) ((b F) X))
+succ = \a.\F.\X.((a F) (F X))
+
+\g.\h.(h (g F))
+2 = \h.(h \F.(h X))
+
+
+
+

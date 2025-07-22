@@ -1,0 +1,54 @@
+2λa 0 b 0
+3(a 0 b) 0
+1a 1b 1c 1d
+
+lambda = sign | func | call
+sign = (1x)+ 0
+func = 2 sign lambda
+call = 3 lambda lambda
+
+-------------
+
+(λa.a b)
+3	2	100	100	110
+130	120	1110100	1110100	1111100
+2 130	2 120	2 a	2 a	2 b
+c f a a b
+
+c	λz.λw.(P (z w)) = λz.λw.(z w)
+f	λx.(P λa.x) = λx.(λz.λw.(z w) λa.x) = λx.λw.(λa.x w)
+a	(P a) = (λx.λw.(λa.x w) a) = λw.(λa.a w)
+a	(P a) = (λw.(λa.a w) a) = λa.a
+b	(P b) = (λa.a b)
+
+--------------
+
+λa.λb.(a b)
+f 1 f 2 c 1 2
+
+f a	λx.(P λa.x) = λx.(λn.n λa.x) = λx.λa.x
+f	λy.(P λi.y) = λx.λa.x
+f b	λy.(P λb.y) = λy.(λx.λa.x λb.y) = λy.λa.λb.y
+c	λz.λw.(P (z w)) = λz.λw.(λy.λa.λb.y (z w)) = λz.λw.λa.λb.(z w)
+a	(P a) = (λz.λw.λa.λb.(z w) a) = λw.λa.λb.(a w)
+b	(P b) = (λw.λa.λb.(a w) b) = λa.λb.(a b)
+
+--------------
+
+f = λP.λx.(P λa.x)
+c = λP.λz.λw.(P (z w))
+* = λP.(P *)
+
+a = λs.λr.λn.(s (n r))
+
+Y = λp.(λf.λa.(p (f f)) λf.λa.(p (f f)))
+
+λ .
+( )
+a
+
+3 0
+
+
+
+
