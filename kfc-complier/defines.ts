@@ -1,8 +1,10 @@
 import {gl, tl, yC} from './lambda';
 
 export const I = gl(n => n);
+export const K = gl(x => _ => x);
+export const S = gl(x => y => z => x(z)(y(z)));
 
-export const bTrue = gl(x => _ => x);
+export const bTrue = K;
 export const bFalse = gl(_ => y => y);
 export const and = gl(a => b => a(b)(a));
 export const or = gl(a => b => a(a)(b));
@@ -15,22 +17,22 @@ export const minus = gl(a => b => b(pred)(a));
 export const isZero = gl(n => n(and(bFalse))(bTrue));
 export const le = gl(a => b => isZero(minus(a)(b)));
 export const gt = gl(a => b => not(le(a)(b)));
+export const ge = gl(a => b => le(b)(a));
+export const ls = gl(a => b => not(ge(a)(b)))
 export const eq = gl(a => b => and(le(a)(b))(le(b)(a)));
 export const ne = gl(a => b => not(eq(a)(b)));
-export const ls = gl(a => b => and(le(a)(b))(ne(a)(b)));
-export const ge = gl(a => b => not(ls(a)(b)));
 export const n0 = gl(_ => X => X);
 export const n1 = gl(F => X => F(X));
 export const n2 = gl(F => X => F(F(X)));
-export const n8 = gl(plus(plus(n2)(n2))(plus(n2)(n2)));
+export const n8 = plus(plus(n2)(n2))(plus(n2)(n2));
 
 export const np1ParamsFn = gl(n => n(bTrue));
-export const manyParamsFn = gl(yC(s => _ => s));
+export const manyParamsFn = yC(s => _ => s);
 // export const debugFn = gl(yC(s => x => (console.log(x), s)));
 
 export const tuple = gl(a => b => T => T(a)(b));
-export const former = gl(bTrue);
-export const latter = gl(bFalse);
+export const former = bTrue;
+export const latter = bFalse;
 
 export const l0 = tuple(F => F)(n0);
 export const l1 = tuple(F => F(tl[6]))(n1);

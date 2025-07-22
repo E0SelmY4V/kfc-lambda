@@ -67,12 +67,12 @@ many_params_fn = ((Y (\s.\r.\a.(s (succ r)))) 0)
 \a.(a \b.(b a))
 f c 0 f c 1 0
 
-f	\A.			\a.(A L)
-c	\B.\C.		\a.((B L) (C L))		c = \P.\X.\Y.(P \L.((X L) (Y L)))
-0	\C.			\a.(a (C L))			0 = \P.(P \L.getL L 0)
-f	\D.			\a.(a \b.(D L))			f = \P.\D.(P \L.\x.(D (push L x)))
-c	\E.\F.		\a.(a \b.((E L) (F L)))
-1	\F.			\a.(a \b.(b (F L)))
+f	\A.			\a.(A [a])
+c	\B.\C.		\a.((B [a]) (C [a]))	c = \P.\X.\Y.(P \L.((X L) (Y L)))
+0	\C.			\a.(a (C [a]))			0 = \P.(P \L.getL L 0)
+f	\D.			\a.(a \b.(D [a,b]))		f = \P.\D.(P \L.\x.(D (push L x)))
+c	\E.\F.		\a.(a \b.((E [a,b]) (F [a,b])))
+1	\F.			\a.(a \b.(b (F [a,b])))
 0				\a.(a \b.(b a))
 
 --------------
@@ -80,14 +80,14 @@ c	\E.\F.		\a.(a \b.((E L) (F L)))
 (\a.(\b.b a) \a.a)
 c f c f 1 0 f 0
 
-c	\A.\B.		((A L) (B L))				c
-f	\C.\B.		(\a.(C L) (B L))			ca
-c	\D.\E.\B.	(\a.((D L) (E L)) (B L))	cac
-f	\F.\E.\B.	(\a.(\b.(F L) (E L)) (B L))	cacb
-1	\E.\B.		(\a.(\b.b (E L)) (B L))		cac
-0	\B.			(\a.(\b.b a) (B L))			c
-f	\G.			(\a.(\b.b a) (\a.(G L)))	ca
-0				(\a.(\b.b a) (\a.a))		
+c	\A.\B.		((A []) (B []))
+f	\C.\B.		(\a.(C [a]) (B []))
+c	\D.\E.\B.	(\a.((D [a]) (E [a])) (B []))
+f	\F.\E.\B.	(\a.(\b.(F [a,b]) (E [a])) (B []))
+1	\E.\B.		(\a.(\b.b (E [a])) (B []))
+0	\B.			(\a.(\b.b a) (B []))
+f	\G.			(\a.(\b.b a) (\a.(G [a])))
+0				(\a.(\b.b a) (\a.a))
 
 f = λP.λx.(P λa.x)
 c = λP.λz.λw.(P (z w))
