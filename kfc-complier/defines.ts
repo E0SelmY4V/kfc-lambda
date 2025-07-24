@@ -1,4 +1,4 @@
-import {gl, tl, yC} from './lambda';
+import {gl, fI, yC} from './lambda';
 
 export const I = gl(n => n);
 export const K = gl(x => _ => x);
@@ -35,9 +35,9 @@ export const former = bTrue;
 export const latter = bFalse;
 
 export const l0 = tuple(F => F)(n0);
-export const l1 = tuple(F => F(tl[6]))(n1);
-export const l2 = tuple(F => F(tl[7])(tl[2]))(n2);
-export const l8 = tuple(F => F(tl[1])(tl[2])(tl[5])(tl[3])(tl[99])(tl[10])(tl[31])(tl[34]))(n8);
+export const l1 = tuple(F => F(fI[6]))(n1);
+export const l2 = tuple(F => F(fI[7])(fI[2]))(n2);
+export const l8 = tuple(F => F(fI[1])(fI[2])(fI[5])(fI[3])(fI[99])(fI[10])(fI[31])(fI[34]))(n8);
 export const pushedHead = gl(l => x => tuple(F => l(former)(F(x)))(succ(l(latter))));
 export const pushedTail = gl(l => x => tuple(F => l(former)(F)(x))(succ(l(latter))));
 export const deletedHead = gl(l => tuple(F => l(former)(_ => F))(pred(l(latter))));

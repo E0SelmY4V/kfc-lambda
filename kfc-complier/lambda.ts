@@ -1,7 +1,7 @@
 export interface Lambda {
 	(x: Lambda): Lambda;
 	testTag?: Tested;
-	then?: () => Lambda;
+	recursing?: () => Lambda;
 }
 
 export abstract class Tested {
@@ -52,7 +52,7 @@ export class TestedConst extends Tested {
 		readonly inner: number,
 	) {super();}
 	toJs(this: this): string {
-		return `tl[${this.inner}]`;
+		return `fI[${this.inner}]`;
 	}
 	toLambda(this: this, _: boolean): string {
 		return this.inner.toString();
@@ -101,24 +101,31 @@ export function log(n: Lambda, level: Log = Log.Js) {
 	][level]());
 }
 
-function getThenable(lastThen: () => Lambda): Lambda {
+function getRecursion(lastRecursing: () => Lambda): Lambda {
 	return n => {
-		const then = () => lastThen()(n);
-		const t0: Lambda = getThenable(then);
-		t0.then = then;
+		const recursing = () => lastRecursing()(n);
+		const t0: Lambda = getRecursion(recursing);
+		t0.recursing = recursing;
 		return t0;
 	}
 }
+/**Y Combinator */
 export const yC = gl(p => {
-	const yCed: Lambda = f => p(getThenable(() => f(f)));
-	return yCed(yCed);
+	const n: Lambda = f => p(getRecursion(() => f(f)));
+	return n(n);
 });
+export const maxRecursion = { num: 999999 };
 export function solve(n: Lambda): Lambda {
-	while (n.then) n = n.then();
+	let i = 0;
+	while (n.recursing) {
+		n = n.recursing();
+		if (i++ > maxRecursion.num) throw Error('Endless Recursion');
+	}
 	return n;
 }
 
-export const tl = Array(999)
+/**free identifier */
+export const fI = Array(999)
 	.fill(0)
 	.map((_, inner) => {
 		const t: Lambda = n => n;

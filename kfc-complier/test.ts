@@ -29,7 +29,7 @@ import {
 	reversed,
 	succ,
 } from './defines';
-import {gl, tl, test} from './lambda';
+import {gl, fI, test} from './lambda';
 
 t('bool', t => {
 	t.deepEqual(and(bTrue)(bTrue), bTrue);
@@ -80,13 +80,13 @@ t('number', t => {
 });
 
 t('list', t => {
-	t.deepEqual(test(pushedHead(l1)(tl[3])), test(gl(T => T(F => F(tl[3])(tl[6]))(n2))));
-	t.deepEqual(test(pushedTail(l1)(tl[3])), test(gl(T => T(F => F(tl[6])(tl[3]))(n2))));
-	t.deepEqual(test(deletedTail(l2)), test(gl(T => T(F => F(tl[7]))(n1))));
-	t.deepEqual(test(deletedHead(l2)), test(gl(T => T(F => F(tl[2]))(n1))));
-	t.deepEqual(test(head(l2)), test(tl[7]));
-	t.deepEqual(test(indexed(l2)(n1)), test(tl[2]));
-	t.deepEqual(test(reversed(l2)), test(gl(T => T(F => F(tl[2])(tl[7]))(n2))));
+	t.deepEqual(test(pushedHead(l1)(fI[3])), test(gl(T => T(F => F(fI[3])(fI[6]))(n2))));
+	t.deepEqual(test(pushedTail(l1)(fI[3])), test(gl(T => T(F => F(fI[6])(fI[3]))(n2))));
+	t.deepEqual(test(deletedTail(l2)), test(gl(T => T(F => F(fI[7]))(n1))));
+	t.deepEqual(test(deletedHead(l2)), test(gl(T => T(F => F(fI[2]))(n1))));
+	t.deepEqual(test(head(l2)), test(fI[7]));
+	t.deepEqual(test(indexed(l2)(n1)), test(fI[2]));
+	t.deepEqual(test(reversed(l2)), test(gl(T => T(F => F(fI[2])(fI[7]))(n2))));
 
 	t.end();
 });
