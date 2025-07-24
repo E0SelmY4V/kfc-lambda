@@ -29,50 +29,50 @@ import {
 	reversed,
 	succ,
 } from './defines';
-import {lambdaEq, gl, tl} from './lambda';
+import {gl, tl, test} from './lambda';
 
 t('bool', t => {
-	t.ok(lambdaEq(and(bTrue)(bTrue), bTrue));
-	t.ok(lambdaEq(and(bFalse)(bTrue), bFalse));
-	t.ok(lambdaEq(and(bTrue)(bFalse), bFalse));
-	t.ok(lambdaEq(and(bFalse)(bFalse), bFalse));
+	t.deepEqual(and(bTrue)(bTrue), bTrue);
+	t.deepEqual(test(and(bFalse)(bTrue)), test(bFalse));
+	t.deepEqual(test(and(bTrue)(bFalse)), test(bFalse));
+	t.deepEqual(test(and(bFalse)(bFalse)), test(bFalse));
 
-	t.ok(lambdaEq(or(bTrue)(bTrue), bTrue));
-	t.ok(lambdaEq(or(bFalse)(bTrue), bTrue));
-	t.ok(lambdaEq(or(bTrue)(bFalse), bTrue));
-	t.ok(lambdaEq(or(bFalse)(bFalse), bFalse));
+	t.deepEqual(test(or(bTrue)(bTrue)), test(bTrue));
+	t.deepEqual(test(or(bFalse)(bTrue)), test(bTrue));
+	t.deepEqual(test(or(bTrue)(bFalse)), test(bTrue));
+	t.deepEqual(test(or(bFalse)(bFalse)), test(bFalse));
 
-	t.ok(lambdaEq(not(bTrue), bFalse));
-	t.ok(lambdaEq(not(bFalse), bTrue));
+	t.deepEqual(test(not(bTrue)), test(bFalse));
+	t.deepEqual(test(not(bFalse)), test(bTrue));
 
 	t.end();
 });
 
 t('number', t => {
-	t.ok(lambdaEq(plus(n8)(n2), plus(n2)(n8)));
-	t.ok(lambdaEq(plus(n2)(n2), plus(n1)(plus(n2)(n1))));
+	t.deepEqual(test(plus(n8)(n2)), test(plus(n2)(n8)));
+	t.deepEqual(test(plus(n2)(n2)), test(plus(n1)(plus(n2)(n1))));
 
-	t.ok(lambdaEq(succ(n1), n2));
-	t.ok(lambdaEq(plus(n8)(n1), succ(n8)));
+	t.deepEqual(test(succ(n1)), test(n2));
+	t.deepEqual(test(plus(n8)(n1)), test(succ(n8)));
 
-	t.ok(lambdaEq(pred(n2), n1));
-	t.ok(lambdaEq(pred(n8), plus(n2)(plus(n2)(plus(n2)(n1)))));
+	t.deepEqual(test(pred(n2)), test(n1));
+	t.deepEqual(test(pred(n8)), test(plus(n2)(plus(n2)(plus(n2)(n1)))));
 
-	t.ok(lambdaEq(isZero(n0), bTrue));
-	t.ok(lambdaEq(isZero(n1), bFalse));
-	t.ok(lambdaEq(isZero(n2), bFalse));
-	t.ok(lambdaEq(isZero(n8), bFalse));
+	t.deepEqual(test(isZero(n0)), test(bTrue));
+	t.deepEqual(test(isZero(n1)), test(bFalse));
+	t.deepEqual(test(isZero(n2)), test(bFalse));
+	t.deepEqual(test(isZero(n8)), test(bFalse));
 
 	const l = [0, 1, 2, 3];
 	const j = [n0, n1, n2, n8];
 	for (const a of l) {
 		for (const b of l) {
-			t.ok(lambdaEq(eq(j[a])(j[b]), a === b ? bTrue : bFalse));
-			t.ok(lambdaEq(ne(j[a])(j[b]), a !== b ? bTrue : bFalse));
-			t.ok(lambdaEq(gt(j[a])(j[b]), a > b ? bTrue : bFalse));
-			t.ok(lambdaEq(ge(j[a])(j[b]), a >= b ? bTrue : bFalse));
-			t.ok(lambdaEq(le(j[a])(j[b]), a <= b ? bTrue : bFalse));
-			t.ok(lambdaEq(ls(j[a])(j[b]), a < b ? bTrue : bFalse));
+			t.deepEqual(test(eq(j[a])(j[b])), test(a === b ? bTrue : bFalse));
+			t.deepEqual(test(ne(j[a])(j[b])), test(a !== b ? bTrue : bFalse));
+			t.deepEqual(test(gt(j[a])(j[b])), test(a > b ? bTrue : bFalse));
+			t.deepEqual(test(ge(j[a])(j[b])), test(a >= b ? bTrue : bFalse));
+			t.deepEqual(test(le(j[a])(j[b])), test(a <= b ? bTrue : bFalse));
+			t.deepEqual(test(ls(j[a])(j[b])), test(a < b ? bTrue : bFalse));
 		}
 	}
 
@@ -80,13 +80,13 @@ t('number', t => {
 });
 
 t('list', t => {
-	t.ok(lambdaEq(pushedHead(l1)(tl[3]), gl(T => T(F => F(tl[3])(tl[6]))(n2))));
-	t.ok(lambdaEq(pushedTail(l1)(tl[3]), gl(T => T(F => F(tl[6])(tl[3]))(n2))));
-	t.ok(lambdaEq(deletedTail(l2), gl(T => T(F => F(tl[7]))(n1))));
-	t.ok(lambdaEq(deletedHead(l2), gl(T => T(F => F(tl[2]))(n1))));
-	t.ok(lambdaEq(head(l2), tl[7]));
-	t.ok(lambdaEq(indexed(l2)(n1), tl[2]));
-	t.ok(lambdaEq(reversed(l2), gl(T => T(F => F(tl[2])(tl[7]))(n2))))
+	t.deepEqual(test(pushedHead(l1)(tl[3])), test(gl(T => T(F => F(tl[3])(tl[6]))(n2))));
+	t.deepEqual(test(pushedTail(l1)(tl[3])), test(gl(T => T(F => F(tl[6])(tl[3]))(n2))));
+	t.deepEqual(test(deletedTail(l2)), test(gl(T => T(F => F(tl[7]))(n1))));
+	t.deepEqual(test(deletedHead(l2)), test(gl(T => T(F => F(tl[2]))(n1))));
+	t.deepEqual(test(head(l2)), test(tl[7]));
+	t.deepEqual(test(indexed(l2)(n1)), test(tl[2]));
+	t.deepEqual(test(reversed(l2)), test(gl(T => T(F => F(tl[2])(tl[7]))(n2))));
 
 	t.end();
 });
