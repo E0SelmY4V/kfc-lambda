@@ -1,4 +1,4 @@
-import {gl, fI, yC} from './lambda';
+import {gl, fI, yC} from '.';
 
 export const I = gl(n => n);
 export const K = gl(x => _ => x);

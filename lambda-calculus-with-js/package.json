@@ -1,0 +1,46 @@
+{
+	"name": "lambda-calculus-with-js",
+	"version": "1.0.0",
+	"description": "Using JS' anonymous functions to perform lambda calculus",
+	"keywords": [
+		"lambda-calculus",
+		"pure",
+		"untyped",
+		"lambda",
+		"dsl",
+		"internal-dsl"
+	],
+	"author": "e0selmy4v",
+	"license": "GPL-2.0-or-later",
+	"main": "index",
+	"types": "index",
+	"devDependencies": {
+		"rimraf": "latest",
+		"colortape": "latest",
+		"tape": "latest",
+		"@types/tape": "latest",
+		"typescript": "latest",
+		"tsx": "latest"
+	},
+	"files": [
+		"*",
+		"!tsconfig.json",
+		"!**/*.ts",
+		"**/*.d.ts",
+		"!*.swp",
+		"!pnpm-lock.yaml"
+	],
+	"type": "module",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/E0SelmY4V/kfc-lambda.git"
+	},
+	"scripts": {
+		"build": "tsc",
+		"clear": "rimraf -g **/*.{d.ts,js}",
+		"prepublishOnly": "pnpm run build",
+		"postpublish": "pnpm run clear",
+		"test": "tsx test.ts | colortape"
+	},
+	"packageManager": "pnpm@9.15.0+sha512.76e2379760a4328ec4415815bcd6628dee727af3779aaa4c914e3944156c4299921a89f976381ee107d41f12cfa4b66681ca9c718f0668fa0831ed4c6d8ba56c"
+}

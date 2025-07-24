@@ -29,7 +29,7 @@ import {
 	reversed,
 	succ,
 } from './defines';
-import {gl, fI, test} from './lambda';
+import {gl, fI, test} from '.';
 
 t('bool', t => {
 	t.deepEqual(and(bTrue)(bTrue), bTrue);
