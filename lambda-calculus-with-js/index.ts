@@ -81,9 +81,10 @@ function getCatcher(
 	return catcher;
 }
 export function test(lambda: Lambda, argTotal = {n: 1}): Tested {
+	lambda = solve(lambda);
 	return lambda.testTag || new TestedFunc(
 		new TestedArg(argTotal.n),
-		test(solve(lambda)(getCatcher(argTotal.n++, argTotal)), argTotal),
+		test(lambda(getCatcher(argTotal.n++, argTotal)), argTotal),
 	);
 }
 
