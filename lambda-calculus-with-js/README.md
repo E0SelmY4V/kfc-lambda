@@ -25,7 +25,7 @@ const yCombinaton = p => (
 )(
     s => p(s(s))
 );
-const factorial = yCombinaton (
+const factorial = yCombinaton(
 	s => n => isZero(n)(
 		n1
 	)(
@@ -35,7 +35,7 @@ const factorial = yCombinaton (
 const n6 = factorial(n3); // JS 是急切求值，怎么防止这段代码爆栈？
 ```
 
-你可以看出来，这种模拟虽然能利用 JS 实现对 Lambda 表达式使用 beta 规约，但是会出现各种各样难以使用的问题。
+你可以看出来，这种模拟虽然能用 JS 来对 Lambda 表达式使用 beta 规约，但是会出现各种各样难以使用的问题。
 
 如果你想要解决这些个问题，就请使用《用 JS 来搞 Lambda 演算》库吧！
 
@@ -49,8 +49,8 @@ const n6 = factorial(n3); // JS 是急切求值，怎么防止这段代码爆栈
 ```ts
 import { Lambda, gl } from 'lambda-calculus-with-js';
 
-const plus: Lambda = a => b => f => x => a(f)(b(f)(x));
-const pred = gl(n => f => x => n(p => h => h(p(f)))(_ => x)(n => n0));
+const plus: Lambda = a => b => a(b);
+const pred = gl(x => _ => x);
 ```
 
 这两种方法都可以。
