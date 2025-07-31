@@ -5,6 +5,7 @@ export interface Lambda {
 }
 
 export abstract class Tested {
+	abstract rebuild(ids?: Record<number, Lambda>): Lambda
 	abstract toJs(): string;
 	abstract toLambda(std: boolean): string;
 }
@@ -13,6 +14,9 @@ export class TestedFunc extends Tested {
 		readonly arg: TestedArg,
 		readonly value: Tested,
 	) {super();}
+	rebuild(this: this, ids: Record<number, Lambda> = {}): Lambda {
+		return n => this.value.rebuild({ ...ids, [this.arg.id]: n});
+	}
 	toJs(this: this): string {
 		return `p${this.arg.id} => ${this.value.toJs()}`;
 	}
@@ -25,6 +29,9 @@ export class TestedCall extends Tested {
 		readonly arg: Tested,
 		readonly caller: Tested,
 	) {super();}
+	rebuild(ids: Record<number, Lambda> = {}): Lambda {
+		return this.caller.rebuild(ids)(this.arg.rebuild(ids));
+	}
 	toJs(this: this): string {
 		let caller = this.caller.toJs();
 		if (this.caller instanceof TestedFunc) caller = `(${caller})`;
@@ -40,6 +47,9 @@ export class TestedArg extends Tested {
 	constructor(
 		readonly id: number,
 	) {super();}
+	rebuild(ids: Record<number, Lambda> = {}): Lambda {
+		return ids[this.id];
+	}
 	toJs(this: this): string {
 		return `p${this.id}`;
 	}
@@ -51,6 +61,9 @@ export class TestedConst extends Tested {
 	constructor(
 		readonly inner: number,
 	) {super();}
+	rebuild(_?: Record<number, Lambda>): Lambda {
+		return fI[this.inner];
+	}
 	toJs(this: this): string {
 		return `fI[${this.inner}]`;
 	}
