@@ -1,5 +1,5 @@
 import t from 'tape';
-import {fI, gl, Lambda, test} from '..';
+import {fI, gl, Lambda, log, test} from '..';
 import {
 	deletedHead,
 	deletedMany,
@@ -41,8 +41,8 @@ t('list', t => {
 		[deletedMany, (l, n) => getList(l.slice(deNumber(n)))],
 		[indexed, (l, i) => l[deNumber(i)]],
 	];
+	const rand = (n = 50) => Math.ceil(Math.random() * n);
 	function randomList() {
-		const rand = () => Math.ceil(Math.random() * 50);
 		const len = rand() + 1;
 		const r = [];
 		for (let i = 0; i < len; i++) {
@@ -57,7 +57,9 @@ t('list', t => {
 			eqL(fn(getList(r)), cm(r), info(fn, r));
 		}
 		for (const [fn, cm] of binTs) {
-			eqL(fn(getList(r))(fI[200]), cm(r, fI[200]), info(fn, r));
+			const n = rand(r.length - 1);
+			const x = getNumber(n)
+			eqL(fn(getList(r))(x), cm(r, x), info(fn, r) + ` ${n}`);
 		}
 	}
 	t.end();
