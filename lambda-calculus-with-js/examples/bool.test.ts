@@ -1,20 +1,28 @@
 import t from 'tape';
-import {test} from '..';
-import {and, bTrue, bFalse, or, not} from './bool';
+import {getLambdaEq} from '../test';
+import {and, bFalse, bTrue, deBool, getBool, not, or} from './bool';
 
 t('bool', t => {
-	t.deepEqual(and(bTrue)(bTrue), bTrue);
-	t.deepEqual(test(and(bFalse)(bTrue)), test(bFalse));
-	t.deepEqual(test(and(bTrue)(bFalse)), test(bFalse));
-	t.deepEqual(test(and(bFalse)(bFalse)), test(bFalse));
+	const eqL = getLambdaEq(t);
 
-	t.deepEqual(test(or(bTrue)(bTrue)), test(bTrue));
-	t.deepEqual(test(or(bFalse)(bTrue)), test(bTrue));
-	t.deepEqual(test(or(bTrue)(bFalse)), test(bTrue));
-	t.deepEqual(test(or(bFalse)(bFalse)), test(bFalse));
+	eqL(and(bTrue)(bTrue), bTrue);
+	eqL(and(bFalse)(bTrue), bFalse);
+	eqL(and(bTrue)(bFalse), bFalse);
+	eqL(and(bFalse)(bFalse), bFalse);
 
-	t.deepEqual(test(not(bTrue)), test(bFalse));
-	t.deepEqual(test(not(bFalse)), test(bTrue));
+	eqL(or(bTrue)(bTrue), bTrue);
+	eqL(or(bFalse)(bTrue), bTrue);
+	eqL(or(bTrue)(bFalse), bTrue);
+	eqL(or(bFalse)(bFalse), bFalse);
+
+	eqL(not(bTrue), bFalse);
+	eqL(not(bFalse), bTrue);
+
+	eqL(getBool(true), bTrue);
+	eqL(getBool(false), bFalse);
+
+	t.equal(deBool(bTrue), true);
+	t.equal(deBool(bFalse), false);
 
 	t.end();
 });

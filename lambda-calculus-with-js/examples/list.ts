@@ -1,21 +1,33 @@
-import {fI, gl, yC} from '..';
-import {n0, n1, n2, n8, pred, succ} from './number';
+import {Lambda, yC} from '..';
+import {getNumber, n0, pred, succ} from './number';
 import {np1ParamsFn} from './struct';
-import {former, latter, tuple} from './tuple';
+import {deTuple, former, latter, tuple} from './tuple';
 
 export const l0 = tuple(F => F)(n0);
-export const l1 = tuple(F => F(fI[6]))(n1);
-export const l2 = tuple(F => F(fI[7])(fI[2]))(n2);
-export const l8 = tuple(F => F(fI[1])(fI[2])(fI[5])(fI[3])(fI[99])(fI[10])(fI[31])(fI[34]))(n8);
-export const pushedHead = gl(l => x => tuple(F => l(former)(F(x)))(succ(l(latter))));
-export const pushedTail = gl(l => x => tuple(F => l(former)(F)(x))(succ(l(latter))));
-export const deletedHead = gl(l => tuple(F => l(former)(_ => F))(pred(l(latter))));
-export const deletedMany = gl(l => n => n(deletedHead)(l));
-export const head = gl(l => l(former)(np1ParamsFn(pred(l(latter)))));
-export const indexed = gl(l => n => head(deletedMany(l)(n)));
-export const revedOne = gl(t => tuple(pushedHead(t(former))(head(t(latter))))(deletedHead(t(latter))));
-export const reversed = gl(l => l(latter)(revedOne)(tuple(l0)(l))(former));
-export const tail = gl(l => head(reversed(l)));
-export const deletedTail = gl(l => reversed(deletedHead(reversed(l))));
+export function getList(l: Lambda[]): Lambda {
+	return tuple(F => l.reduce((p, n) => p(n), F))(getNumber(l.length));
+}
+function getReceiver(r: Lambda[]): Lambda {
+	return n => {
+		r.push(n);
+		return getReceiver(r);
+	}
+}
+export function deList(l: Lambda): Lambda[] {
+	const [f] = deTuple(l);
+	const r: Lambda[] = [];
+	f(getReceiver(r));
+	return r;
+}
+export const pushedHead: Lambda = l => x => tuple(F => l(former)(F(x)))(succ(l(latter)));
+export const pushedTail: Lambda = l => x => tuple(F => l(former)(F)(x))(succ(l(latter)));
+export const deletedHead: Lambda = l => tuple(F => l(former)(_ => F))(pred(l(latter)));
+export const deletedMany: Lambda = l => n => n(deletedHead)(l);
+export const head: Lambda = l => l(former)(np1ParamsFn(pred(l(latter))));
+export const indexed: Lambda = l => n => head(deletedMany(l)(n));
+const revedOne: Lambda = t => tuple(pushedHead(t(former))(head(t(latter))))(deletedHead(t(latter)));
+export const reversed: Lambda = l => l(latter)(revedOne)(tuple(l0)(l))(former);
+export const tail: Lambda = l => head(reversed(l));
+export const deletedTail: Lambda = l => reversed(deletedHead(reversed(l)));
 export const deletedTailUntil = yC(s => l => f => f(tail(l))(l)(s(deletedTail(l))(f)));
 

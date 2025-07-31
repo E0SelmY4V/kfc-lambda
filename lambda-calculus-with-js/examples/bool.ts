@@ -1,9 +1,15 @@
-import {gl} from '..';
+import {Lambda} from '..';
 import {K} from './combinatory';
 
 export const bTrue = K;
-export const bFalse = gl(_ => y => y);
-export const and = gl(a => b => a(b)(a));
-export const or = gl(a => b => a(a)(b));
-export const not = gl(a => a(bFalse)(bTrue));
+export const bFalse: Lambda = _ => y => y;
+export function getBool(n: boolean): Lambda {
+	return n ? bTrue : bFalse;
+}
+export function deBool(n: Lambda): boolean {
+	return n(true as any)(false as any) as any;
+}
+export const and: Lambda = a => b => a(b)(a);
+export const or: Lambda = a => b => a(a)(b);
+export const not: Lambda = a => a(bFalse)(bTrue);
 

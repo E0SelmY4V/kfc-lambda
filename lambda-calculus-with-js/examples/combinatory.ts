@@ -1,6 +1,6 @@
-import {gl} from '..';
+import {Lambda} from "..";
 
-export const I = gl(n => n);
-export const K = gl(x => _ => x);
-export const S = gl(x => y => z => x(z)(y(z)));
+export const I: Lambda = n => n;
+export const K: Lambda = x => _ => x;
+export const S: Lambda = x => y => z => x(z)(y(z));
 

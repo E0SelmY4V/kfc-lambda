@@ -1,6 +1,6 @@
-import {gl, yC} from '..';
+import {Lambda, yC} from '..';
 import {bTrue} from './bool';
 
-export const np1ParamsFn = gl(n => n(bTrue));
+export const np1ParamsFn: Lambda = n => n(bTrue);
 export const manyParamsFn = yC(s => _ => s);
 

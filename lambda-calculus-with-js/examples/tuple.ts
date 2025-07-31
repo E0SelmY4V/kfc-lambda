@@ -1,7 +1,9 @@
-import {gl} from '..';
-import {bFalse, bTrue} from './bool';
+import {Lambda} from '..';
+import {bTrue as former, bFalse as latter} from './bool';
 
-export const tuple = gl(a => b => T => T(a)(b));
-export const former = bTrue;
-export const latter = bFalse;
+export const tuple: Lambda = a => b => T => T(a)(b);
+export function deTuple(t: Lambda): [Lambda, Lambda] {
+	return [t(former), t(latter)];
+}
+export {former, latter};
 
