@@ -1,5 +1,7 @@
 # 用 JS 来搞 Lambda 演算
 
+[![All test](https://github.com/E0SelmY4V/kfc-lambda/actions/workflows/test-all.yml/badge.svg)](https://github.com/E0SelmY4V/kfc-lambda/actions/workflows/test-all.yml)
+
 JS 可以模拟 Lambda 演算，比如这样：
 
 
@@ -20,11 +22,7 @@ const is0 = n => n(_ => bFalse)(bTrue);
 
 const temp = multi(n3) // 怎么能把这个结果转换为 Lambda 表达式？
 
-const yCombinaton = p => (
-    s => p(s(s))
-)(
-    s => p(s(s))
-);
+const yCombinaton = p => (s => p(s(s)))(s => p(s(s)));
 const factorial = yCombinaton(
 	s => n => isZero(n)(
 		n1
@@ -86,7 +84,9 @@ JS 本质上是一个急切求值的语言，所以普通的 Y 组合子不能�
 唯一的注意事项是不要有死循环，也就是说递归必须能在某个时候退出。
 否则的话求值的过程是无限长的，就算是惰性求值也没法用 `log` 得知其内部了。
 
-顺便一提 `yC` 自己也算死循环，不要直接 `log(yC)` 。
+> 顺便一提 `yC` 自己也算死循环，不要直接 `log(yC)` 。
+
+这是如何实现阶乘：
 
 ```ts
 import { log, yC, Lambda } from 'lambda-calculus-with-js'
