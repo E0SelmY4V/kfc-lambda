@@ -1,0 +1,6 @@
+#! /bin/bash
+
+cd ./lambda-calculus-with-js/
+pnpm lint
+pnpm test
+

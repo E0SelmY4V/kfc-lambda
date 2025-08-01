@@ -1,5 +1,5 @@
-import {Lambda} from '..';
-import {K} from './combinatory';
+import { Lambda } from '..';
+import { K } from './combinatory';
 
 export const bTrue = K;
 export const bFalse: Lambda = _ => y => y;

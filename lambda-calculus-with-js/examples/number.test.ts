@@ -1,7 +1,7 @@
 import t from 'tape';
-import {Lambda, test} from '..';
-import {getLambdaEq} from '../test';
-import {getBool} from './bool';
+import { Lambda, test } from '..';
+import { getLambdaEq } from '../test';
+import { getBool } from './bool';
 import {
 	deNumber,
 	eq,
@@ -17,7 +17,7 @@ import {
 	ne,
 	plus,
 	pred,
-	succ
+	succ,
 } from './number';
 
 const n1 = getNumber(1);
@@ -35,11 +35,11 @@ t('number', t => {
 		return n === 0 ? 1 : n * fact(n - 1);
 	}
 	const sigTs: [Lambda, (n: number) => Lambda, string][] = [
-		[isZero, (n) => getBool(n === 0), '0 =='],
-		[succ, (n) => getNumber(n + 1), '1 +'],
-		[pred, (n) => getNumber(n ? n - 1 : 0), '-1 +'],
+		[isZero, n => getBool(n === 0), '0 =='],
+		[succ, n => getNumber(n + 1), '1 +'],
+		[pred, n => getNumber(n ? n - 1 : 0), '-1 +'],
 		[factorial, n => getNumber(fact(n)), 'fact'],
-	]
+	];
 	const binTs: [Lambda, (a: number, b: number) => Lambda, string][] = [
 		[plus, (a, b) => getNumber(a + b), '+'],
 		[multi, (a, b) => getNumber(a * b), '*'],
@@ -51,7 +51,8 @@ t('number', t => {
 		[eq, (a, b) => getBool(a === b), '=='],
 		[ne, (a, b) => getBool(a !== b), '!='],
 	];
-	const l = Array(10).fill(0).map((_, b) => b);
+	const l = Array(10).fill(0)
+		.map((_, b) => b);
 	for (const a of l) {
 		t.equal(deNumber(getNumber(a)), a);
 		for (const [fn, cm, msg] of sigTs) {

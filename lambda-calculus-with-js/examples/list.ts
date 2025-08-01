@@ -1,7 +1,7 @@
-import {Lambda, yC} from '..';
-import {getNumber, n0, pred, succ} from './number';
-import {np1ParamsFn} from './struct';
-import {deTuple, former, latter, tuple} from './tuple';
+import { Lambda, yC } from '..';
+import { getNumber, n0, pred, succ } from './number';
+import { np1ParamsFn } from './struct';
+import { deTuple, former, latter, tuple } from './tuple';
 
 export const l0 = tuple(F => F)(n0);
 export function getList(l: Lambda[]): Lambda {
@@ -11,7 +11,7 @@ function getReceiver(r: Lambda[]): Lambda {
 	return n => {
 		r.push(n);
 		return getReceiver(r);
-	}
+	};
 }
 export function deList(l: Lambda): Lambda[] {
 	const [f] = deTuple(l);

@@ -1,6 +1,6 @@
 import t from 'tape';
-import {getLambdaEq} from '../test';
-import {and, bFalse, bTrue, deBool, getBool, not, or} from './bool';
+import { getLambdaEq } from '../test';
+import { and, bFalse, bTrue, deBool, getBool, not, or } from './bool';
 
 t('bool', t => {
 	const eqL = getLambdaEq(t);

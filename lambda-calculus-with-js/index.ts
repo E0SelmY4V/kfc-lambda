@@ -5,7 +5,7 @@ export interface Lambda {
 }
 
 export abstract class Tested {
-	abstract rebuild(ids?: Record<number, Lambda>): Lambda
+	abstract rebuild(ids?: Record<number, Lambda>): Lambda;
 	abstract toJs(): string;
 	abstract toLambda(std: boolean): string;
 }
@@ -13,9 +13,9 @@ export class TestedFunc extends Tested {
 	constructor(
 		readonly arg: TestedArg,
 		readonly value: Tested,
-	) {super();}
+	) { super(); }
 	rebuild(this: this, ids: Record<number, Lambda> = {}): Lambda {
-		return n => this.value.rebuild({ ...ids, [this.arg.id]: n});
+		return n => this.value.rebuild({ ...ids, [this.arg.id]: n });
 	}
 	toJs(this: this): string {
 		return `p${this.arg.id} => ${this.value.toJs()}`;
@@ -28,7 +28,7 @@ export class TestedCall extends Tested {
 	constructor(
 		readonly arg: Tested,
 		readonly caller: Tested,
-	) {super();}
+	) { super(); }
 	rebuild(ids: Record<number, Lambda> = {}): Lambda {
 		return this.caller.rebuild(ids)(this.arg.rebuild(ids));
 	}
@@ -46,7 +46,7 @@ export class TestedCall extends Tested {
 export class TestedArg extends Tested {
 	constructor(
 		readonly id: number,
-	) {super();}
+	) { super(); }
 	rebuild(ids: Record<number, Lambda> = {}): Lambda {
 		return ids[this.id];
 	}
@@ -60,7 +60,7 @@ export class TestedArg extends Tested {
 export class TestedConst extends Tested {
 	constructor(
 		readonly inner: number,
-	) {super();}
+	) { super(); }
 	rebuild(_?: Record<number, Lambda>): Lambda {
 		return fI[this.inner];
 	}
@@ -79,23 +79,23 @@ export function gl(lambda: Lambda): Lambda {
 
 function getCatcher(
 	argThis: number,
-	argTotal: {n: number},
+	argTotal: { n: number },
 	testTag: Tested = new TestedArg(argThis),
 ): Lambda {
 	const catcher: Lambda = (n: Lambda) => getCatcher(
 		argThis,
 		argTotal,
 		new TestedCall(
-			n.testTag ? n.testTag : test(n, argTotal),
+			n.testTag ?? test(n, argTotal),
 			catcher.testTag!,
 		),
 	);
 	catcher.testTag = testTag;
 	return catcher;
 }
-export function test(lambda: Lambda, argTotal = {n: 1}): Tested {
+export function test(lambda: Lambda, argTotal = { n: 1 }): Tested {
 	lambda = solve(lambda);
-	return lambda.testTag || new TestedFunc(
+	return lambda.testTag ?? new TestedFunc(
 		new TestedArg(argTotal.n),
 		test(lambda(getCatcher(argTotal.n++, argTotal)), argTotal),
 	);
@@ -121,7 +121,7 @@ function getRecursion(lastRecursing: () => Lambda): Lambda {
 		const t0: Lambda = getRecursion(recursing);
 		t0.recursing = recursing;
 		return t0;
-	}
+	};
 }
 /**Y Combinator */
 export const yC = gl(p => {
@@ -143,7 +143,7 @@ export const fI = Array(999)
 	.fill(0)
 	.map((_, inner) => {
 		const t: Lambda = n => n;
-		t.testTag = new TestedConst(inner)
+		t.testTag = new TestedConst(inner);
 		return t;
 	});
 

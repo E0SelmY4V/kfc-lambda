@@ -1,10 +1,13 @@
 import t from 'tape';
-import {fI, gl, Lambda, log, test} from '..';
+import { fI, Lambda, test } from '..';
+import { getLambdaEq } from '../test';
+import { I } from './combinatory';
 import {
 	deletedHead,
 	deletedMany,
 	deletedTail,
 	deList,
+	getList,
 	head,
 	indexed,
 	l0,
@@ -13,11 +16,8 @@ import {
 	reversed,
 	tail,
 } from './list';
-import {getLambdaEq} from '../test';
-import {getList} from './list';
-import {deNumber, eq, getNumber} from './number';
-import {tuple} from './tuple';
-import {I} from './combinatory';
+import { deNumber, getNumber } from './number';
+import { tuple } from './tuple';
 
 t('list', t => {
 	const eqL = getLambdaEq(t);
@@ -58,7 +58,7 @@ t('list', t => {
 		}
 		for (const [fn, cm] of binTs) {
 			const n = rand(r.length - 1);
-			const x = getNumber(n)
+			const x = getNumber(n);
 			eqL(fn(getList(r))(x), cm(r, x), info(fn, r) + ` ${n}`);
 		}
 	}
