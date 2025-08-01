@@ -4,4 +4,5 @@ pnpm-lock.yaml
 node_modules
 lambda-calculus-with-js/**/*.d.ts
 lambda-calculus-with-js/**/*.js
+!lambda-calculus-with-js/eslint.config.js
 

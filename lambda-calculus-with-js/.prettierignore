@@ -12,3 +12,4 @@
 **/*.mtsx
 **/*.md
 **/dist
+pnpm-lock.yaml
