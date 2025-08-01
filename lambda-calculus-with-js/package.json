@@ -1,6 +1,6 @@
 {
 	"name": "lambda-calculus-with-js",
-	"version": "1.0.1",
+	"version": "1.1.0",
 	"description": "Using JS' anonymous functions to perform lambda calculus",
 	"keywords": [
 		"lambda-calculus",
@@ -51,7 +51,7 @@
 		"prelint": "prettier -c .",
 		"lint": "eslint .",
 		"build": "tsc",
-		"clear": "rimraf -g **/*.{d.ts,js}",
+		"clear": "rimraf -g **/*.{d.ts,js} & git restore eslint.config.js",
 		"prepublishOnly": "pnpm run build",
 		"postpublish": "pnpm run clear",
 		"test": "tsx test.ts | colortape"
