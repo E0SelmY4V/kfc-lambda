@@ -8,7 +8,21 @@ export abstract class Tested {
 	abstract rebuild(ids?: Record<number, Lambda>): Lambda;
 	abstract toJs(): string;
 	abstract toLambda(std: boolean): string;
-	abstract toKfc(num: boolean): string;
+	abstract toKfc(
+		num: boolean,
+		indenter?: Indenter,
+		table?: Record<number, number>,
+		depth?: number,
+	): string;
+}
+interface Indenter {
+	(context: string): string;
+	next(): Indenter;
+}
+function getIndenter(indented = 0): Indenter {
+	const indenter = (context: string) => `${'| '.repeat(indented)}${context}\n`;
+	indenter.next = () => getIndenter(indented + 1);
+	return indenter;
 }
 export class TestedFunc extends Tested {
 	constructor(
@@ -24,8 +38,15 @@ export class TestedFunc extends Tested {
 	toLambda(this: this, std: boolean): string {
 		return `λp${this.arg.id}.${this.value.toLambda(std)}`;
 	}
-	toKfc(this: this, num: boolean): string {
-		return 'f' + this.value.toKfc(num);
+	toKfc(
+		this: this,
+		num: boolean,
+		indenter = getIndenter(),
+		table: Record<number, number> = {},
+		depth = 0,
+	): string {
+		return (num ? indenter('func') : 'F')
+			+ this.value.toKfc(num, indenter.next(), { ...table, [this.arg.id]: depth }, depth + 1);
 	}
 }
 export class TestedCall extends Tested {
@@ -46,8 +67,16 @@ export class TestedCall extends Tested {
 		const arg = this.arg.toLambda(std);
 		return std ? `(${caller} ${arg})` : `((${caller}) (${arg}))`;
 	}
-	toKfc(this: this, num: boolean): string {
-		return 'c' + this.caller.toKfc(num) + this.arg.toKfc(num);
+	toKfc(
+		this: this,
+		num: boolean,
+		indenter = getIndenter(),
+		table: Record<number, number> = {},
+		depth = 0,
+	): string {
+		return (num ? indenter('call') : 'C')
+			+ this.caller.toKfc(num, indenter.next(), table, depth)
+			+ this.arg.toKfc(num, indenter.next(), table, depth);
 	}
 }
 export class TestedArg extends Tested {
@@ -63,8 +92,17 @@ export class TestedArg extends Tested {
 	toLambda(this: this, _: boolean): string {
 		return `p${this.id}`;
 	}
-	toKfc(this: this, num: boolean): string {
-		return num ? this.id.toString() : 'k'.repeat(this.id) + 'f';
+	toKfc(
+		this: this,
+		num: boolean,
+		indenter = getIndenter(),
+		table: Record<number, number> = {},
+		depth = 0,
+	): string {
+		const argDepth = depth - table[this.id];
+		return num
+			? indenter(argDepth.toString())
+			: 'K'.repeat(argDepth) + 'F';
 	}
 }
 export class TestedConst extends Tested {
@@ -80,8 +118,10 @@ export class TestedConst extends Tested {
 	toLambda(this: this, _: boolean): string {
 		return this.inner.toString();
 	}
-	toKfc(this: this, num: boolean): string {
-		return num ? `{${this.inner}}` : this.inner.toString();
+	toKfc(this: this, num: boolean, indenter = getIndenter()): string {
+		return num
+			? indenter(this.inner.toString())
+			: this.inner.toString();
 	}
 }
 
@@ -92,7 +132,7 @@ export function gl(lambda: Lambda): Lambda {
 
 function getCatcher(
 	argThis: number,
-	argTotal: { n: number },
+	argTotal: { id: number },
 	testTag: Tested = new TestedArg(argThis),
 ): Lambda {
 	const catcher: Lambda = (n: Lambda) => getCatcher(
@@ -106,11 +146,11 @@ function getCatcher(
 	catcher.testTag = testTag;
 	return catcher;
 }
-export function test(lambda: Lambda, argTotal = { n: 1 }): Tested {
+export function test(lambda: Lambda, argTotal = { id: 1 }): Tested {
 	lambda = solve(lambda);
 	return lambda.testTag ?? new TestedFunc(
-		new TestedArg(argTotal.n),
-		test(lambda(getCatcher(argTotal.n++, argTotal)), argTotal),
+		new TestedArg(argTotal.id),
+		test(lambda(getCatcher(argTotal.id++, argTotal)), argTotal),
 	);
 }
 
