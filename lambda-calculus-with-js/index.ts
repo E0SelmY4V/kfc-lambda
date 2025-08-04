@@ -26,8 +26,8 @@ export class TestedFunc extends Tested {
 }
 export class TestedCall extends Tested {
 	constructor(
-		readonly arg: Tested,
 		readonly caller: Tested,
+		readonly arg: Tested,
 	) { super(); }
 	rebuild(ids: Record<number, Lambda> = {}): Lambda {
 		return this.caller.rebuild(ids)(this.arg.rebuild(ids));
@@ -86,8 +86,8 @@ function getCatcher(
 		argThis,
 		argTotal,
 		new TestedCall(
-			n.testTag ?? test(n, argTotal),
 			catcher.testTag!,
+			n.testTag ?? test(n, argTotal),
 		),
 	);
 	catcher.testTag = testTag;
@@ -102,22 +102,31 @@ export function test(lambda: Lambda, argTotal = { n: 1 }): Tested {
 }
 
 export enum Log {
+	/**普通 Lambda 表达式 */
 	Std = 0,
+	/**JavaScript 代码 */
 	Js,
+	/**大部分 Lambda 演算网站可以正确识别的形式 */
 	Exable,
 }
+const logMap: readonly ((tested: Tested) => string)[] = [
+	tested => tested.toLambda(true),
+	tested => tested.toJs(),
+	tested => tested.toLambda(false),
+];
 export function log(n: Lambda, level: Log = Log.Js) {
-	const tested = test(n);
-	console.log([
-		() => tested.toLambda(true),
-		() => tested.toJs(),
-		() => tested.toLambda(false),
-	][level]());
+	console.log(logMap[level](test(n)));
 }
 
 function getRecursion(lastRecursing: () => Lambda): Lambda {
 	return n => {
-		const recursing = () => lastRecursing()(n);
+		let recursing: () => Lambda;
+		if (recursionConfig.boldlyReceiving) {
+			const recursed = lastRecursing();
+			recursing = () => recursed(n);
+		} else {
+			recursing = () => lastRecursing()(n);
+		}
 		const t0: Lambda = getRecursion(recursing);
 		t0.recursing = recursing;
 		return t0;
@@ -128,12 +137,17 @@ export const yC = gl(p => {
 	const n: Lambda = f => p(getRecursion(() => f(f)));
 	return n(n);
 });
-export const maxRecursion = { num: 999999 };
+export const recursionConfig = {
+	/**递归次数限制，超过就被认为是死循环 */
+	max: 999999,
+	/**实验性，如果为 true ，递归函数的最大参数数量不受栈空间影响 */
+	boldlyReceiving: false,
+};
 export function solve(n: Lambda): Lambda {
 	let i = 0;
 	while (n.recursing) {
 		n = n.recursing();
-		if (i++ > maxRecursion.num) throw Error('Endless Recursion');
+		if (i++ > recursionConfig.max) throw Error('Endless Recursion');
 	}
 	return n;
 }
