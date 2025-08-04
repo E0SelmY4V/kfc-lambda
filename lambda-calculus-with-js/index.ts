@@ -8,6 +8,7 @@ export abstract class Tested {
 	abstract rebuild(ids?: Record<number, Lambda>): Lambda;
 	abstract toJs(): string;
 	abstract toLambda(std: boolean): string;
+	abstract toKfc(num: boolean): string;
 }
 export class TestedFunc extends Tested {
 	constructor(
@@ -22,6 +23,9 @@ export class TestedFunc extends Tested {
 	}
 	toLambda(this: this, std: boolean): string {
 		return `λp${this.arg.id}.${this.value.toLambda(std)}`;
+	}
+	toKfc(this: this, num: boolean): string {
+		return 'f' + this.value.toKfc(num);
 	}
 }
 export class TestedCall extends Tested {
@@ -42,6 +46,9 @@ export class TestedCall extends Tested {
 		const arg = this.arg.toLambda(std);
 		return std ? `(${caller} ${arg})` : `((${caller}) (${arg}))`;
 	}
+	toKfc(this: this, num: boolean): string {
+		return 'c' + this.caller.toKfc(num) + this.arg.toKfc(num);
+	}
 }
 export class TestedArg extends Tested {
 	constructor(
@@ -56,6 +63,9 @@ export class TestedArg extends Tested {
 	toLambda(this: this, _: boolean): string {
 		return `p${this.id}`;
 	}
+	toKfc(this: this, num: boolean): string {
+		return num ? this.id.toString() : 'k'.repeat(this.id) + 'f';
+	}
 }
 export class TestedConst extends Tested {
 	constructor(
@@ -69,6 +79,9 @@ export class TestedConst extends Tested {
 	}
 	toLambda(this: this, _: boolean): string {
 		return this.inner.toString();
+	}
+	toKfc(this: this, num: boolean): string {
+		return num ? `{${this.inner}}` : this.inner.toString();
 	}
 }
 
@@ -108,11 +121,17 @@ export enum Log {
 	Js,
 	/**大部分 Lambda 演算网站可以正确识别的形式 */
 	Exable,
+	/**KFC 语言 */
+	Kfc,
+	/**使用数字的易懂的 KFC 语言 */
+	KfcNum,
 }
-const logMap: readonly ((tested: Tested) => string)[] = [
-	tested => tested.toLambda(true),
-	tested => tested.toJs(),
-	tested => tested.toLambda(false),
+const logMap: readonly ((t: Tested) => string)[] = [
+	t => t.toLambda(true),
+	t => t.toJs(),
+	t => t.toLambda(false),
+	t => t.toKfc(false),
+	t => t.toKfc(true),
 ];
 export function log(n: Lambda, level: Log = Log.Js) {
 	console.log(logMap[level](test(n)));
