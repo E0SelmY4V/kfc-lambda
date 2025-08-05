@@ -1,6 +1,7 @@
 use std::{cell::RefCell, rc::Rc};
 
 pub mod parser;
+pub mod display;
 
 #[derive(Debug, Clone)]
 pub enum Kfc {
