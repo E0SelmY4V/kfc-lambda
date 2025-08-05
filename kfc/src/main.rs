@@ -1,4 +1,5 @@
 use kfc_lambda::*;
+use parser::{build_kfc, tokenize, KfcToken};
 
 pub fn main() {
     let kfc = build_kfc(&vec![
@@ -15,6 +16,6 @@ pub fn main() {
         KfcToken::Func,
         KfcToken::Arg(1),
     ]);
-    // print!("{:#?}", kfc);
-    print!("{:#?}", apply(kfc));
+    let kfc0 = build_kfc(&tokenize("cffckkfckkfckkfkffkf"));
+    print!("{:?}", format!("{:?}", kfc) == format!("{:?}", kfc0));
 }
