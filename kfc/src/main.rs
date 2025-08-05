@@ -16,6 +16,5 @@ pub fn main() {
         KfcToken::Func,
         KfcToken::Arg(1),
     ]);
-    let kfc0 = build_kfc(&tokenize("cffckkfckkfckkfkffkf"));
-    print!("{:?}", format!("{:?}", kfc) == format!("{:?}", kfc0));
+    print!("{:#?}", apply(kfc));
 }

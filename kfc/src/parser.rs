@@ -7,9 +7,6 @@ pub enum KfcToken {
     Arg(usize),
 }
 
-fn new_refed_kfc(kfc: Kfc) -> RefedKfc {
-    Rc::new(RefCell::new(Rc::new(kfc)))
-}
 fn build_kfc_impl(
     tokens: &[KfcToken],
     funcs: &mut Vec<Option<RefedKfc>>,
@@ -43,10 +40,7 @@ fn build_kfc_impl(
                     .as_ref()
                     .unwrap()
                     .clone();
-                while funcs.last().is_some_and(|x| x.is_some()) {
-                    funcs.pop();
-                }
-                funcs.pop();
+                while let Some(Some(_)) = funcs.pop() {}
                 (arg, 1)
             }
         }

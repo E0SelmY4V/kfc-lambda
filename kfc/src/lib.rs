@@ -2,21 +2,23 @@ use std::{cell::RefCell, rc::Rc};
 
 pub mod parser;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum Kfc {
     Call(RefedKfc, RefedKfc),
     Func(RefedKfc, RefedKfc),
     Value(usize),
 }
-type RefedKfc = Rc<RefCell<Rc<Kfc>>>;
+type RefedKfc = Rc<RefCell<Kfc>>;
 
-pub fn apply(refed_kfc: RefedKfc) -> RefedKfc {
-    if let Kfc::Call(caller, arg) = &**refed_kfc.borrow() {
-        if let Kfc::Func(values, expr) = &**caller.borrow() {
-            values.replace(Rc::clone(&arg.borrow()));
-            return Rc::new(RefCell::new(Rc::clone(&expr.borrow())));
+fn new_refed_kfc(kfc: Kfc) -> RefedKfc {
+    Rc::new(RefCell::new(kfc))
+}
+pub fn apply(refed_kfc: RefedKfc) -> Option<RefedKfc> {
+    if let Kfc::Call(caller, arg) = &*refed_kfc.borrow() {
+        if let Kfc::Func(values, expr) = &*caller.borrow() {
+            values.replace(arg.borrow().clone());
+            return Some(new_refed_kfc(expr.borrow().clone()));
         }
     }
-    refed_kfc
+    None
 }
-
