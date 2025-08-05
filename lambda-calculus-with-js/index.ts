@@ -4,23 +4,30 @@ export interface Lambda {
 	recursing?: () => Lambda;
 }
 
+type StrArr = string | StrArr[];
 export abstract class Tested {
-	abstract rebuild(ids?: Record<number, Lambda>): Lambda;
-	abstract toJs(): string;
-	abstract toLambda(std: boolean): string;
-	abstract toKfc(
+	abstract rebuild(this: this, ids?: Record<number, Lambda>): Lambda;
+	abstract toJs(this: this): string;
+	abstract toLambda(this: this, std: boolean): string;
+	abstract kfcify(
+		this: this,
 		num: boolean,
-		indenter?: Indenter,
-		table?: Record<number, number>,
-		depth?: number,
-	): string;
+		indenter: Indenter,
+		table: Record<number, number>,
+		depth: number,
+	): StrArr;
+	toKfc(this: this, num: boolean): string {
+		const arr: string[] = [this.kfcify(num, getIndenter(), {}, 0) as any].flat(Infinity);
+		return arr.join('');
+	}
 }
 interface Indenter {
 	(context: string): string;
 	next(): Indenter;
 }
 function getIndenter(indented = 0): Indenter {
-	const indenter = (context: string) => `${'| '.repeat(indented)}${context}\n`;
+	const space = '| '.repeat(indented);
+	const indenter = (context: string) => `${space}${context}\n`;
 	indenter.next = () => getIndenter(indented + 1);
 	return indenter;
 }
@@ -38,15 +45,17 @@ export class TestedFunc extends Tested {
 	toLambda(this: this, std: boolean): string {
 		return `λp${this.arg.id}.${this.value.toLambda(std)}`;
 	}
-	toKfc(
+	kfcify(
 		this: this,
 		num: boolean,
-		indenter = getIndenter(),
-		table: Record<number, number> = {},
-		depth = 0,
-	): string {
-		return (num ? indenter('func') : 'F')
-			+ this.value.toKfc(num, indenter.next(), { ...table, [this.arg.id]: depth }, depth + 1);
+		indenter: Indenter,
+		table: Record<number, number>,
+		depth: number,
+	): StrArr {
+		return [
+			num ? indenter('func') : 'F',
+			this.value.kfcify(num, indenter.next(), { ...table, [this.arg.id]: depth }, depth + 1),
+		];
 	}
 }
 export class TestedCall extends Tested {
@@ -67,16 +76,18 @@ export class TestedCall extends Tested {
 		const arg = this.arg.toLambda(std);
 		return std ? `(${caller} ${arg})` : `((${caller}) (${arg}))`;
 	}
-	toKfc(
+	kfcify(
 		this: this,
 		num: boolean,
 		indenter = getIndenter(),
 		table: Record<number, number> = {},
 		depth = 0,
-	): string {
-		return (num ? indenter('call') : 'C')
-			+ this.caller.toKfc(num, indenter.next(), table, depth)
-			+ this.arg.toKfc(num, indenter.next(), table, depth);
+	): StrArr {
+		return [
+			num ? indenter('call') : 'C',
+			this.caller.kfcify(num, indenter.next(), table, depth),
+			this.arg.kfcify(num, indenter.next(), table, depth),
+		];
 	}
 }
 export class TestedArg extends Tested {
@@ -92,13 +103,13 @@ export class TestedArg extends Tested {
 	toLambda(this: this, _: boolean): string {
 		return `p${this.id}`;
 	}
-	toKfc(
+	kfcify(
 		this: this,
 		num: boolean,
 		indenter = getIndenter(),
 		table: Record<number, number> = {},
 		depth = 0,
-	): string {
+	): StrArr {
 		const argDepth = depth - table[this.id];
 		return num
 			? indenter(argDepth.toString())
@@ -118,7 +129,7 @@ export class TestedConst extends Tested {
 	toLambda(this: this, _: boolean): string {
 		return this.inner.toString();
 	}
-	toKfc(this: this, num: boolean, indenter = getIndenter()): string {
+	kfcify(this: this, num: boolean, indenter = getIndenter()): StrArr {
 		return num
 			? indenter(this.inner.toString())
 			: this.inner.toString();
