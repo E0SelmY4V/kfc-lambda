@@ -34,10 +34,14 @@ jobs:
               run: |
                   cd lambda-calculus-with-js
                   pnpm test
+                  cd ../kfc
+                  cargo test
             - name: Lint
               run: |
                   cd lambda-calculus-with-js
                   pnpm lint
+                  cd ../kfc
+                  cargo check
 
 
 

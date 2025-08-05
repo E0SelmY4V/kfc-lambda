@@ -4,3 +4,7 @@ cd ./lambda-calculus-with-js/
 pnpm lint
 pnpm test
 
+cd ../kfc/
+cargo check
+cargo test
+
