@@ -19,6 +19,21 @@ fn to_kfc_impl(refed_kfc: RefedKfc, table: &mut HashMap<usize, usize>, depth: us
 pub fn to_kfc(refed_kfc: RefedKfc) -> String {
     to_kfc_impl(refed_kfc, &mut HashMap::new(), 0)
 }
+pub fn to_js(refed_kfc: RefedKfc) -> String {
+    match &*(*refed_kfc).borrow() {
+        Kfc::Call(caller, arg) => format!(
+            "{}({})",
+            if let Kfc::Func(_, _) = &*(**caller).borrow() {
+                format!("({})", to_js(caller.clone()))
+            } else {
+                to_js(caller.clone())
+            },
+            to_js(arg.clone())
+        ),
+        Kfc::Func(arg, expr) => format!("{} => {}", to_js(arg.clone()), to_js(expr.clone())),
+        Kfc::Value(num) => format!("p{num}"),
+    }
+}
 
 pub trait Displayer {
     fn call(caller: String, arg: String) -> String;
@@ -68,11 +83,5 @@ dis_nt!(
     ToExable, to_exable,
     |caller, arg| format!("(({caller}) ({arg}))"),
     |arg, expr| format!("λ{arg}.{expr}"),
-    |num| format!("p{num}"),
-);
-dis_nt!(
-    ToJs, to_js,
-    |caller, arg| format!("({caller})({arg})"),
-    |arg, expr| format!("{arg} => {expr}"),
     |num| format!("p{num}"),
 );
