@@ -3,10 +3,10 @@ use std::collections::HashMap;
 use crate::*;
 
 fn to_kfc_impl(refed_kfc: RefedKfc, table: &mut HashMap<usize, usize>, depth: usize) -> String {
-    match &*refed_kfc.borrow() {
+    match &*(*refed_kfc).borrow() {
         Kfc::Call(caller, arg) => format!("C{}{}", to_kfc_impl(caller.clone(), table, depth), to_kfc_impl(arg.clone(), table, depth)),
         Kfc::Func(arg, expr) => {
-            if let Kfc::Value(num) = *arg.borrow() {
+            if let Kfc::Value(num) = *(**arg).borrow() {
                 table.insert(num, depth);
                 format!("F{}", to_kfc_impl(expr.clone(), table, depth + 1))
             } else {
@@ -26,7 +26,7 @@ pub trait Displayer {
     fn value(num: usize) -> String;
 }
 pub fn display<T: Displayer>(refed_kfc: RefedKfc) -> String {
-    match &*refed_kfc.borrow() {
+    match &*(*refed_kfc).borrow() {
         Kfc::Call(caller, arg) => T::call(display::<T>(caller.clone()), display::<T>(arg.clone())),
         Kfc::Func(arg, expr) => T::func(display::<T>(arg.clone()), display::<T>(expr.clone())),
         Kfc::Value(num) => T::value(*num),

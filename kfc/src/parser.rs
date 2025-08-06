@@ -36,7 +36,7 @@ fn build_kfc_impl(
                     .filter(|x| x.is_some())
                     .rev()
                     .nth(num - 1)
-                    .expect(&format!("No fn {num}"))
+                    .expect(&format!("No fn {num} when id is {}", *id_total))
                     .as_ref()
                     .unwrap()
                     .clone();
@@ -69,7 +69,8 @@ pub fn tokenize(code: &str) -> Vec<KfcToken> {
             'K' | 'k' => {
                 num += 1;
             }
-            _ => panic!("Wrong Token"),
+            n if n.is_digit(10) => tokens.push(KfcToken::Arg(n.to_digit(10).unwrap() as usize)),
+            _ => {}
         }
     }
     tokens
