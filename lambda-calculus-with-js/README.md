@@ -60,17 +60,17 @@ const pred = gl(x => _ => x);
 但是如果你用了这个库，它提供了一个 `log` 函数和其他设施，你不仅可以看懂一个 Lmabda 表达式的内部，还可以用各种不同的格式看懂！
 
 ```ts
-import { log, Log, Lambda } from 'lambda-calculus-with-js';
+import { log, jsifier, stdLambdaifier, Lambda } from 'lambda-calculus-with-js';
 
 const plus: Lambda = a => b => f => x => a(f)(b(f)(x));
 const n2: Lambda = f => x => f(f(x));
 
 const a = plus(n2);
 
-log(a, Log.Js);
+log(a, jsifier);
 // p1 => p2 => p3 => p2(p2(p1(p2)(p3)))
 
-log(a, Log.Std);
+log(a, stdLambdaifier);
 // λp1.λp2.λp3.(p2 (p2 ((p1 p2) p3)))
 ```
 

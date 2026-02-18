@@ -1,5 +1,5 @@
 import t from 'tape';
-import { fI, Lambda, test } from '..';
+import { fI, Lambda, stdLambdaifier, test } from '..';
 import { getLambdaEq } from '../test';
 import { I } from './combinatory';
 import {
@@ -50,7 +50,7 @@ t('list', t => {
 		}
 		return r;
 	}
-	const info = (fn: Lambda, r: Lambda[]) => `${fn.name} with ${r.map(n => test(n).toLambda(true))}`;
+	const info = (fn: Lambda, r: Lambda[]) => `${fn.name} with ${r.map(n => stdLambdaifier.format(test(n)))}`;
 	for (let i = 0; i < 50; i++) {
 		const r = randomList();
 		for (const [fn, cm] of sigTs) {

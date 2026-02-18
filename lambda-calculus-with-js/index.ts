@@ -4,23 +4,56 @@ export interface Lambda {
 	recursing?: () => Lambda;
 }
 
-type StrArr = string | StrArr[];
-export abstract class Tested {
-	abstract rebuild(this: this, ids?: Record<number, Lambda>): Lambda;
-	abstract toJs(this: this): string;
-	abstract toLambda(this: this, std: boolean): string;
-	abstract kfcify(
-		this: this,
-		num: boolean,
-		indenter: Indenter,
-		table: Record<number, number>,
-		depth: number,
-	): StrArr;
-	toKfc(this: this, num: boolean): string {
-		const arr: string[] = [this.kfcify(num, getIndenter(), {}, 0) as any].flat(Infinity);
-		return arr.join('');
+type FormatterMap<T, A extends any[]> = {
+	[I in SignTested]: (this: FormatterMap<T, A>, tested: Tested & { sign: I }, ...args: A) => T;
+};
+export class Formatter<T, A extends any[] = []> {
+	protected readonly map: FormatterMap<T, A>;
+	protected readonly chose = (tested: Tested, ...args: A) => this.map[tested.sign](tested as any, ...args);
+	constructor(
+		mapFn: (chose: (tested: Tested, ...args: A) => T) => FormatterMap<T, A>,
+		protected readonly initer: () => A,
+	) {
+		this.map = mapFn(this.chose);
+	}
+	format(this: this, tested: Tested) {
+		return this.chose(tested, ...this.initer());
 	}
 }
+
+export const rebuilder = new Formatter<Lambda, [ids: Record<number, Lambda>]>(chose => ({
+	func: ({ value, arg: { id } }, ids) => n => chose(value, { ...ids, [id]: n }),
+	call: ({ caller, arg }, ids) => chose(caller, ids)(chose(arg, ids)),
+	arg: ({ id }, ids) => ids[id],
+	const: ({ inner }) => fI[inner],
+}), () => [{}]);
+
+export const jsifier = new Formatter<string>(chose => ({
+	func({ arg, value }) {
+		return `${this.arg(arg)} => ${chose(value)}`;
+	},
+	call({ caller, arg }) {
+		let callerStr = chose(caller);
+		if (caller instanceof TestedFunc) callerStr = `(${callerStr})`;
+		return `${callerStr}(${chose(arg)})`;
+	},
+	arg: ({ id }) => `p${id}`,
+	const: ({ inner }) => `fI[${inner}]`,
+}), () => []);
+
+export const [lambdaifier, stdLambdaifier] = [false, true].map(std => new Formatter<string>(chose => ({
+	func({ arg, value }) {
+		return `λ${this.arg(arg)}.${chose(value)}`;
+	},
+	call({ caller, arg }) {
+		const callerStr = chose(caller);
+		const argStr = chose(arg);
+		return std ? `(${callerStr} ${argStr})` : `((${callerStr}) (${argStr}))`;
+	},
+	arg: ({ id }) => `p${id}`,
+	const: ({ inner }) => inner.toString(),
+}), () => []));
+
 interface Indenter {
 	(context: string): string;
 	next(): Indenter;
@@ -31,109 +64,68 @@ function getIndenter(indented = 0): Indenter {
 	indenter.next = () => getIndenter(indented + 1);
 	return indenter;
 }
-export class TestedFunc extends Tested {
-	constructor(
-		readonly arg: TestedArg,
-		readonly value: Tested,
-	) { super(); }
-	rebuild(this: this, ids: Record<number, Lambda> = {}): Lambda {
-		return n => this.value.rebuild({ ...ids, [this.arg.id]: n });
-	}
-	toJs(this: this): string {
-		return `p${this.arg.id} => ${this.value.toJs()}`;
-	}
-	toLambda(this: this, std: boolean): string {
-		return `λp${this.arg.id}.${this.value.toLambda(std)}`;
-	}
-	kfcify(
-		this: this,
-		num: boolean,
-		indenter: Indenter,
-		table: Record<number, number>,
-		depth: number,
-	): StrArr {
-		return [
-			num ? indenter('func') : 'F',
-			this.value.kfcify(num, indenter.next(), { ...table, [this.arg.id]: depth }, depth + 1),
-		];
-	}
-}
-export class TestedCall extends Tested {
-	constructor(
-		readonly caller: Tested,
-		readonly arg: Tested,
-	) { super(); }
-	rebuild(ids: Record<number, Lambda> = {}): Lambda {
-		return this.caller.rebuild(ids)(this.arg.rebuild(ids));
-	}
-	toJs(this: this): string {
-		let caller = this.caller.toJs();
-		if (this.caller instanceof TestedFunc) caller = `(${caller})`;
-		return `${caller}(${this.arg.toJs()})`;
-	}
-	toLambda(this: this, std: boolean): string {
-		const caller = this.caller.toLambda(std);
-		const arg = this.arg.toLambda(std);
-		return std ? `(${caller} ${arg})` : `((${caller}) (${arg}))`;
-	}
-	kfcify(
-		this: this,
-		num: boolean,
-		indenter = getIndenter(),
-		table: Record<number, number> = {},
-		depth = 0,
-	): StrArr {
-		return [
-			num ? indenter('call') : 'C',
-			this.caller.kfcify(num, indenter.next(), table, depth),
-			this.arg.kfcify(num, indenter.next(), table, depth),
-		];
-	}
-}
-export class TestedArg extends Tested {
-	constructor(
-		readonly id: number,
-	) { super(); }
-	rebuild(ids: Record<number, Lambda> = {}): Lambda {
-		return ids[this.id];
-	}
-	toJs(this: this): string {
-		return `p${this.id}`;
-	}
-	toLambda(this: this, _: boolean): string {
-		return `p${this.id}`;
-	}
-	kfcify(
-		this: this,
-		num: boolean,
-		indenter = getIndenter(),
-		table: Record<number, number> = {},
-		depth = 0,
-	): StrArr {
-		const argDepth = depth - table[this.id];
+export const [kfcifier, numKfcifier] = [false, true].map(num => new Formatter<string, [
+	indenter: Indenter,
+	table: Record<number, number>,
+	depth: number,
+]>(chose => ({
+	func: ({ value, arg: { id } }, indenter, table, depth) => [
+		num ? indenter('func') : 'F',
+		chose(value, indenter.next(), { ...table, [id]: depth }, depth + 1),
+	].join(''),
+	call: ({ caller, arg }, indenter, table, depth) => [
+		num ? indenter('call') : 'C',
+		chose(caller, indenter.next(), table, depth),
+		chose(arg, indenter.next(), table, depth),
+	].join(''),
+	arg({ id }, indenter, table, depth) {
+		const argDepth = depth - table[id];
 		return num
 			? indenter(argDepth.toString())
 			: 'K'.repeat(argDepth) + 'F';
-	}
+	},
+	const: ({ inner }, indenter) => (num
+		? indenter(inner.toString())
+		: inner.toString()
+	),
+}), () => [getIndenter(), {}, 0]));
+
+export const enum SignTested {
+	Func = 'func',
+	Arg = 'arg',
+	Call = 'call',
+	Const = 'const',
 }
-export class TestedConst extends Tested {
+export type Tested
+	= TestedArg
+	| TestedCall
+	| TestedFunc
+	| TestedConst;
+export class TestedFunc {
+	readonly sign = SignTested.Func;
+	constructor(
+		readonly arg: TestedArg,
+		readonly value: Tested,
+	) { }
+}
+export class TestedCall {
+	readonly sign = SignTested.Call;
+	constructor(
+		readonly caller: Tested,
+		readonly arg: Tested,
+	) { }
+}
+export class TestedArg {
+	readonly sign = SignTested.Arg;
+	constructor(
+		readonly id: number,
+	) { }
+}
+export class TestedConst {
+	readonly sign = SignTested.Const;
 	constructor(
 		readonly inner: number,
-	) { super(); }
-	rebuild(_?: Record<number, Lambda>): Lambda {
-		return fI[this.inner];
-	}
-	toJs(this: this): string {
-		return `fI[${this.inner}]`;
-	}
-	toLambda(this: this, _: boolean): string {
-		return this.inner.toString();
-	}
-	kfcify(this: this, num: boolean, indenter = getIndenter()): StrArr {
-		return num
-			? indenter(this.inner.toString())
-			: this.inner.toString();
-	}
+	) { }
 }
 
 /**getLambda */
@@ -165,27 +157,8 @@ export function test(lambda: Lambda, argTotal = { id: 1 }): Tested {
 	);
 }
 
-export enum Log {
-	/**普通 Lambda 表达式 */
-	Std = 0,
-	/**JavaScript 代码 */
-	Js,
-	/**大部分 Lambda 演算网站可以正确识别的形式 */
-	Exable,
-	/**KFC 语言 */
-	Kfc,
-	/**使用数字的易懂的 KFC 语言 */
-	KfcNum,
-}
-const logMap: readonly ((t: Tested) => string)[] = [
-	t => t.toLambda(true),
-	t => t.toJs(),
-	t => t.toLambda(false),
-	t => t.toKfc(false),
-	t => t.toKfc(true),
-];
-export function log(n: Lambda, level: Log = Log.Js) {
-	console.log(logMap[level](test(n)));
+export function log(n: Lambda, formatter: Formatter<any, any[]> = jsifier) {
+	console.log(formatter.format(test(n)));
 }
 
 function getRecursion(lastRecursing: () => Lambda): Lambda {
