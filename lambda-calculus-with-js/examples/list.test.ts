@@ -1,5 +1,5 @@
 import t from 'tape';
-import { fI, Lambda, stdLambdaifier, test } from '..';
+import { getFreeIdent, getFreeIdents, Lambda, stdLambdaifier, test } from '..';
 import { getLambdaEq } from '../test';
 import { I } from './combinatory';
 import {
@@ -21,12 +21,13 @@ import { tuple } from './tuple';
 
 t('list', t => {
 	const eqL = getLambdaEq(t);
+	const [a, b, c] = getFreeIdents();
 
 	eqL(getList([]), l0);
-	eqL(getList([fI[1], fI[2], fI[3]]), tuple(F => F(fI[1])(fI[2])(fI[3]))(getNumber(3)));
+	eqL(getList([a, b, c]), tuple(F => F(a)(b)(c))(getNumber(3)));
 	eqL(getList([I, pushedHead, deletedTail]), tuple(F => F(I)(pushedHead)(deletedTail))(getNumber(3)));
 
-	t.deepEqual(deList(getList([fI[1], fI[3], fI[5]])), [fI[1], fI[3], fI[5]]);
+	t.deepEqual(deList(getList([a, b, c])), [a, b, c]);
 
 	const sigTs: [Lambda, (l: Lambda[]) => Lambda][] = [
 		[deletedHead, l => getList(l.slice(1))],
@@ -46,7 +47,7 @@ t('list', t => {
 		const len = rand() + 1;
 		const r = [];
 		for (let i = 0; i < len; i++) {
-			r.push(fI[rand()]);
+			r.push(getFreeIdent());
 		}
 		return r;
 	}

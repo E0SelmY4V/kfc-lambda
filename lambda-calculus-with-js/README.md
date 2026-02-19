@@ -68,10 +68,10 @@ const n2: Lambda = f => x => f(f(x));
 const a = plus(n2);
 
 jsifier.log(a);
-// p1 => p2 => p3 => p2(p2(p1(p2)(p3)))
+// a => b => c => b(b(a(b)(c)))
 
 stdLambdaifier.log(a);
-// λp1.λp2.λp3.(p2 (p2 ((p1 p2) p3)))
+// λa.λb.λc.(b (b ((a b) c)))
 ```
 
 ## 惰性求值的 Y 组合子
@@ -106,6 +106,6 @@ const n4: Lambda = f => x => f(f(f(f(x))));
 const n24 = factorial(n4);
 
 jsifier.log(n24);
-// p1 => p2 => p1(p1(p1(p1(p1(p1(p1(p1(p1(p1(p1(p1(p1(p1(p1(p1(p1(p1(p1(p1(p1(p1(p1(p1(p2))))))))))))))))))))))))
+// a => b => a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(b))))))))))))))))))))))))
 ```
 

@@ -36,9 +36,10 @@ export class TestedArg {
 }
 export class TestedConst {
 	readonly sign = SignTested.Const;
-	constructor(
-		readonly inner: number,
-	) { }
+	readonly inner = Symbol('free identifier');
+	rebuild() {
+		return getCatcher(this);
+	}
 }
 
 /**getLambda */
@@ -97,11 +98,12 @@ export function solve(n: Lambda): Lambda {
 	return n;
 }
 
-/**free identifier */
-export const fI = Array(999)
-	.fill(0)
-	.map((_, inner) => {
-		const t = getCatcher(new TestedConst(inner));
-		return t;
-	});
+export function getFreeIdent() {
+	return getCatcher(new TestedConst());
+}
+export function *getFreeIdents() {
+	while (true) {
+		yield getFreeIdent();
+	}
+}
 

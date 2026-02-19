@@ -9,11 +9,11 @@ t('readme', t => {
 
 	t.equal(
 		jsifier.format(a),
-		'p1 => p2 => p3 => p2(p2(p1(p2)(p3)))',
+		'a => b => c => b(b(a(b)(c)))',
 	);
 	t.equal(
 		stdLambdaifier.format(a),
-		'λp1.λp2.λp3.(p2 (p2 ((p1 p2) p3)))',
+		'λa.λb.λc.(b (b ((a b) c)))',
 	);
 
 	const n1: Lambda = f => x => f(x);
@@ -31,7 +31,7 @@ t('readme', t => {
 	const n24 = factorial(n4);
 	t.equal(
 		jsifier.format(n24),
-		'p1 => p2 => p1(p1(p1(p1(p1(p1(p1(p1(p1(p1(p1(p1(p1(p1(p1(p1(p1(p1(p1(p1(p1(p1(p1(p1(p2))))))))))))))))))))))))',
+		'a => b => a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(b))))))))))))))))))))))))',
 	);
 
 	t.end();

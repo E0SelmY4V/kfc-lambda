@@ -1,5 +1,5 @@
+import { toBb26 } from 'bb26';
 import {
-	fI,
 	Lambda,
 	SignTested,
 	test,
@@ -27,40 +27,51 @@ export class Formatter<T, A extends any[] = []> {
 	}
 }
 
+export function chr(id: symbol, ids: symbol[], isCon: boolean) {
+	if (isCon) ids.push(id);
+	const chr = toBb26(ids.indexOf(id) + 1);
+	return isCon ? chr : chr.toLowerCase();
+}
+
 export const rebuilder = new Formatter<Lambda, [ids: Record<symbol, Lambda>]>(chose => ({
 	func: ({ value, arg: { id } }, ids) => n => chose(value, { ...ids, [id]: n }),
 	call: ({ caller, arg }, ids) => chose(caller, ids)(chose(arg, ids)),
 	arg: ({ id }, ids) => ids[id],
-	const: ({ inner }) => fI[inner],
+	const: con => con.rebuild(),
 }), () => [{}]);
 
-export const jsifier = new Formatter<string, [ids: symbol[]]>(chose => ({
-	func({ arg, value }, ids) {
-		ids.push(arg.id);
-		return `${this.arg(arg, ids)} => ${chose(value, ids)}`;
-	},
-	call({ caller, arg }, ids) {
-		let callerStr = chose(caller, ids);
-		if (caller instanceof TestedFunc) callerStr = `(${callerStr})`;
-		return `${callerStr}(${chose(arg, ids)})`;
-	},
-	arg: ({ id }, ids) => `p${ids.indexOf(id) + 1}`,
-	const: ({ inner }) => `fI[${inner}]`,
-}), () => [[]]);
+class Symbols {
+	readonly ids: symbol[] = [];
+	readonly cons: symbol[] = [];
+}
 
-export const [lambdaifier, stdLambdaifier] = [false, true].map(std => new Formatter<string, [ids: symbol[]]>(chose => ({
-	func({ arg, value }, ids) {
-		ids.push(arg.id);
-		return `λ${this.arg(arg, ids)}.${chose(value, ids)}`;
+export const jsifier = new Formatter<string, [symbols: Symbols]>(chose => ({
+	func({ arg, value }, symbols) {
+		symbols.ids.push(arg.id);
+		return `${this.arg(arg, symbols)} => ${chose(value, symbols)}`;
 	},
-	call({ caller, arg }, ids) {
-		const callerStr = chose(caller, ids);
-		const argStr = chose(arg, ids);
+	call({ caller, arg }, symbols) {
+		let callerStr = chose(caller, symbols);
+		if (caller instanceof TestedFunc) callerStr = `(${callerStr})`;
+		return `${callerStr}(${chose(arg, symbols)})`;
+	},
+	arg: ({ id }, { ids }) => chr(id, ids, false),
+	const: ({ inner }, { cons }) => chr(inner, cons, true),
+}), () => [new Symbols()]);
+
+export const [lambdaifier, stdLambdaifier] = [false, true].map(std => new Formatter<string, [symbols: Symbols]>(chose => ({
+	func({ arg, value }, symbols) {
+		symbols.ids.push(arg.id);
+		return `λ${this.arg(arg, symbols)}.${chose(value, symbols)}`;
+	},
+	call({ caller, arg }, symbols) {
+		const callerStr = chose(caller, symbols);
+		const argStr = chose(arg, symbols);
 		return std ? `(${callerStr} ${argStr})` : `((${callerStr}) (${argStr}))`;
 	},
-	arg: ({ id }, ids) => `p${ids.indexOf(id) + 1}`,
-	const: ({ inner }) => inner.toString(),
-}), () => [[]]));
+	arg: ({ id }, { ids }) => chr(id, ids, false),
+	const: ({ inner }, { cons }) => chr(inner, cons, true),
+}), () => [new Symbols()]));
 
 interface Indenter {
 	(context: string): string;
@@ -74,26 +85,26 @@ function getIndenter(indented = 0): Indenter {
 }
 export const [kfcifier, numKfcifier] = [false, true].map(num => new Formatter<string, [
 	indenter: Indenter,
-	table: Record<symbol, number>,
+	symbols: { ids: Record<symbol, number>; cons: symbol[] },
 	depth: number,
 ]>(chose => ({
-	func: ({ value, arg: { id } }, indenter, table, depth) => [
+	func: ({ value, arg: { id } }, indenter, { ids, cons }, depth) => [
 		num ? indenter('func') : 'F',
-		chose(value, indenter.next(), { ...table, [id]: depth }, depth + 1),
+		chose(value, indenter.next(), { ids: { ...ids, [id]: depth }, cons }, depth + 1),
 	].join(''),
-	call: ({ caller, arg }, indenter, table, depth) => [
+	call: ({ caller, arg }, indenter, symbols, depth) => [
 		num ? indenter('call') : 'C',
-		chose(caller, indenter.next(), table, depth),
-		chose(arg, indenter.next(), table, depth),
+		chose(caller, indenter.next(), symbols, depth),
+		chose(arg, indenter.next(), symbols, depth),
 	].join(''),
-	arg({ id }, indenter, table, depth) {
-		const argDepth = depth - table[id];
+	arg({ id }, indenter, { ids }, depth) {
+		const argDepth = depth - ids[id];
 		return num
 			? indenter(argDepth.toString())
 			: 'K'.repeat(argDepth) + 'F';
 	},
-	const: ({ inner }, indenter) => (num
-		? indenter(inner.toString())
-		: inner.toString()
-	),
-}), () => [getIndenter(), {}, 0]));
+	const: ({ inner }, indenter, { cons }) => (num
+		? indenter
+		: (n: string) => n
+	)(chr(inner, cons, true)),
+}), () => [getIndenter(), { ids: {}, cons: [] }, 0]));

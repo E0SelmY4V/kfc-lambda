@@ -2,7 +2,7 @@
 	"$schema": "https://json.schemastore.org/tsconfig",
 	"compilerOptions": {
 		"module": "ESNext",
-		"moduleResolution": "Node10",
+		"moduleResolution": "bundler",
 		"target": "ESNext",
 		"noImplicitAny": true,
 		"noImplicitReturns": true,
