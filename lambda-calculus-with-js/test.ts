@@ -10,4 +10,5 @@ export function getLambdaEq(t: Test) {
 import './examples/bool.test';
 import './examples/list.test';
 import './examples/number.test';
+import './examples/readme.test';
 
