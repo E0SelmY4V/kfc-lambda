@@ -1,9 +1,9 @@
 import { Test } from 'tape';
-import { Lambda, test } from '.';
+import { jsifier, Lambda } from '.';
 
 export function getLambdaEq(t: Test) {
 	return (a: Lambda, b: Lambda, msg?: string) => {
-		t.deepEqual(test(a), test(b), msg);
+		t.deepEqual(jsifier.format(a), jsifier.format(b), msg);
 	};
 }
 

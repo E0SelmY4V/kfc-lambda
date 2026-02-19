@@ -1,5 +1,5 @@
 import t from 'tape';
-import { Lambda, test } from '..';
+import { Lambda } from '..';
 import { getLambdaEq } from '../test';
 import { getBool } from './bool';
 import {
@@ -27,9 +27,9 @@ const n8 = getNumber(8);
 t('number', t => {
 	const eqL = getLambdaEq(t);
 
-	t.deepEqual(test(n1), test(f => x => f(x)));
-	t.deepEqual(test(n2), test(f => x => f(f(x))));
-	t.deepEqual(test(n8), test(f => x => f(f(f(f(f(f(f(f(x))))))))));
+	eqL(n1, f => x => f(x));
+	eqL(n2, f => x => f(f(x)));
+	eqL(n8, f => x => f(f(f(f(f(f(f(f(x)))))))));
 
 	function fact(n: number): number {
 		return n === 0 ? 1 : n * fact(n - 1);

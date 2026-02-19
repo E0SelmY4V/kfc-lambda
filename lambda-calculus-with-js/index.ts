@@ -17,10 +17,11 @@ export type Tested
 	| TestedConst;
 export class TestedFunc {
 	readonly sign = SignTested.Func;
-	constructor(
-		readonly arg: TestedArg,
-		readonly value: Tested,
-	) { }
+	readonly arg = new TestedArg();
+	readonly value: Tested;
+	constructor(lambda: Lambda) {
+		this.value = test(lambda(getCatcher(this.arg)));
+	}
 }
 export class TestedCall {
 	readonly sign = SignTested.Call;
@@ -31,9 +32,7 @@ export class TestedCall {
 }
 export class TestedArg {
 	readonly sign = SignTested.Arg;
-	constructor(
-		readonly id: number,
-	) { }
+	readonly id = Symbol('some arg');
 }
 export class TestedConst {
 	readonly sign = SignTested.Const;
@@ -47,28 +46,19 @@ export function gl(lambda: Lambda): Lambda {
 	return lambda;
 }
 
-function getCatcher(
-	argThis: number,
-	argTotal: { id: number },
-	testTag: Tested = new TestedArg(argThis),
-): Lambda {
+function getCatcher(testTag: Tested): Lambda {
 	const catcher: Lambda = (n: Lambda) => getCatcher(
-		argThis,
-		argTotal,
 		new TestedCall(
-			catcher.testTag!,
-			n.testTag ?? test(n, argTotal),
+			testTag,
+			n.testTag ?? test(n),
 		),
 	);
 	catcher.testTag = testTag;
 	return catcher;
 }
-export function test(lambda: Lambda, argTotal = { id: 1 }): Tested {
+export function test(lambda: Lambda): Tested {
 	lambda = solve(lambda);
-	return lambda.testTag ?? new TestedFunc(
-		new TestedArg(argTotal.id),
-		test(lambda(getCatcher(argTotal.id++, argTotal)), argTotal),
-	);
+	return lambda.testTag ?? new TestedFunc(lambda);
 }
 
 export * from './formatters';
@@ -111,8 +101,7 @@ export function solve(n: Lambda): Lambda {
 export const fI = Array(999)
 	.fill(0)
 	.map((_, inner) => {
-		const t: Lambda = n => n;
-		t.testTag = new TestedConst(inner);
+		const t = getCatcher(new TestedConst(inner));
 		return t;
 	});
 

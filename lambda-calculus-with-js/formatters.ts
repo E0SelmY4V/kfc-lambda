@@ -27,38 +27,40 @@ export class Formatter<T, A extends any[] = []> {
 	}
 }
 
-export const rebuilder = new Formatter<Lambda, [ids: Record<number, Lambda>]>(chose => ({
+export const rebuilder = new Formatter<Lambda, [ids: Record<symbol, Lambda>]>(chose => ({
 	func: ({ value, arg: { id } }, ids) => n => chose(value, { ...ids, [id]: n }),
 	call: ({ caller, arg }, ids) => chose(caller, ids)(chose(arg, ids)),
 	arg: ({ id }, ids) => ids[id],
 	const: ({ inner }) => fI[inner],
 }), () => [{}]);
 
-export const jsifier = new Formatter<string>(chose => ({
-	func({ arg, value }) {
-		return `${this.arg(arg)} => ${chose(value)}`;
+export const jsifier = new Formatter<string, [ids: symbol[]]>(chose => ({
+	func({ arg, value }, ids) {
+		ids.push(arg.id);
+		return `${this.arg(arg, ids)} => ${chose(value, ids)}`;
 	},
-	call({ caller, arg }) {
-		let callerStr = chose(caller);
+	call({ caller, arg }, ids) {
+		let callerStr = chose(caller, ids);
 		if (caller instanceof TestedFunc) callerStr = `(${callerStr})`;
-		return `${callerStr}(${chose(arg)})`;
+		return `${callerStr}(${chose(arg, ids)})`;
 	},
-	arg: ({ id }) => `p${id}`,
+	arg: ({ id }, ids) => `p${ids.indexOf(id) + 1}`,
 	const: ({ inner }) => `fI[${inner}]`,
-}), () => []);
+}), () => [[]]);
 
-export const [lambdaifier, stdLambdaifier] = [false, true].map(std => new Formatter<string>(chose => ({
-	func({ arg, value }) {
-		return `λ${this.arg(arg)}.${chose(value)}`;
+export const [lambdaifier, stdLambdaifier] = [false, true].map(std => new Formatter<string, [ids: symbol[]]>(chose => ({
+	func({ arg, value }, ids) {
+		ids.push(arg.id);
+		return `λ${this.arg(arg, ids)}.${chose(value, ids)}`;
 	},
-	call({ caller, arg }) {
-		const callerStr = chose(caller);
-		const argStr = chose(arg);
+	call({ caller, arg }, ids) {
+		const callerStr = chose(caller, ids);
+		const argStr = chose(arg, ids);
 		return std ? `(${callerStr} ${argStr})` : `((${callerStr}) (${argStr}))`;
 	},
-	arg: ({ id }) => `p${id}`,
+	arg: ({ id }, ids) => `p${ids.indexOf(id) + 1}`,
 	const: ({ inner }) => inner.toString(),
-}), () => []));
+}), () => [[]]));
 
 interface Indenter {
 	(context: string): string;
@@ -72,7 +74,7 @@ function getIndenter(indented = 0): Indenter {
 }
 export const [kfcifier, numKfcifier] = [false, true].map(num => new Formatter<string, [
 	indenter: Indenter,
-	table: Record<number, number>,
+	table: Record<symbol, number>,
 	depth: number,
 ]>(chose => ({
 	func: ({ value, arg: { id } }, indenter, table, depth) => [
