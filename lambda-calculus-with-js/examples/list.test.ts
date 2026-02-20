@@ -4,7 +4,7 @@ import { getLambdaEq } from '../test';
 import { I } from './combinatory';
 import {
 	deletedHead,
-	deletedMany,
+	deletedHeadMany,
 	deletedTail,
 	deList,
 	getList,
@@ -39,7 +39,7 @@ t('list', t => {
 	const binTs: [Lambda, (l: Lambda[], x: Lambda) => Lambda][] = [
 		[pushedHead, (l, x) => getList([x, ...l])],
 		[pushedTail, (l, x) => getList([...l, x])],
-		[deletedMany, (l, n) => getList(l.slice(deNumber(n)))],
+		[deletedHeadMany, (l, n) => getList(l.slice(deNumber(n)))],
 		[indexed, (l, i) => l[deNumber(i)]],
 	];
 	const rand = (n = 50) => Math.ceil(Math.random() * n);
