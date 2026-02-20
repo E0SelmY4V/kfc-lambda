@@ -1,5 +1,5 @@
 import t from 'tape';
-import { Lambda, jsifier, stdLambdaifier, yC } from '..';
+import { Lambda, getFreeIdents, jsifier, stdLambdaifier, yC } from '..';
 import { bFalse } from './bool';
 
 t('readme', t => {
@@ -32,6 +32,13 @@ t('readme', t => {
 	t.equal(
 		jsifier.format(n24),
 		'a => b => a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(b))))))))))))))))))))))))',
+	);
+
+	const [F, A, B] = getFreeIdents();
+	const cons: Lambda = nil => F(A)(F(B)(nil));
+	t.equal(
+		stdLambdaifier.format(cons),
+		'λa.((A B) ((A C) a))',
 	);
 
 	t.end();
