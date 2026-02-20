@@ -28,7 +28,7 @@ export class Formatter<T, A extends any[] = []> {
 }
 
 export function chr(id: symbol, ids: symbol[], isCon: boolean) {
-	if (isCon) ids.push(id);
+	if (isCon && !ids.includes(id)) ids.push(id);
 	const chr = toBb26(ids.indexOf(id) + 1);
 	return isCon ? chr : chr.toLowerCase();
 }
