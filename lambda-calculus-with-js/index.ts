@@ -39,6 +39,11 @@ export class TestedFunc {
 	constructor(lambda: Lambda) {
 		this.value = test(lambda(getCatcher(this.arg)));
 	}
+	equal(n: Tested, ids: Record<symbol, symbol> = {}): boolean {
+		if (n.sign !== this.sign) return false;
+		ids[this.arg.id] = n.arg.id;
+		return this.value.equal(n.value, ids);
+	}
 }
 /**调用结构 */
 export class TestedCall {
@@ -52,6 +57,10 @@ export class TestedCall {
 		readonly caller: Tested,
 		readonly arg: Tested,
 	) { }
+	equal(n: Tested, ids: Record<symbol, symbol> = {}): boolean {
+		if (n.sign !== this.sign) return false;
+		return this.caller.equal(n.caller, ids) && this.arg.equal(n.arg, ids);
+	}
 }
 /**函数参数结构 */
 export class TestedArg {
@@ -59,6 +68,10 @@ export class TestedArg {
 	readonly sign = SignTested.Arg;
 	/**参数的标志 */
 	readonly id = Symbol('some arg');
+	equal(n: Tested, ids: Record<symbol, symbol> = {}): boolean {
+		if (n.sign !== this.sign) return false;
+		return ids[this.id] === n.id;
+	}
 }
 /**自由标识符结构 */
 export class TestedConst {
@@ -69,6 +82,10 @@ export class TestedConst {
 	/**再得到自己对应的 Lambda 表达式 */
 	rebuild() {
 		return getCatcher(this);
+	}
+	equal(n: Tested): boolean {
+		if (n.sign !== this.sign) return false;
+		return this.inner === n.inner;
 	}
 }
 
