@@ -29,16 +29,20 @@ export type Tested
 	| TestedConst;
 /**函数定义结构 */
 export class TestedFunc {
+	/**@param lambda 待探明结构的 Lambda 函数 */
+	static test(lambda: Lambda) {
+		const arg = new TestedArg();
+		return new this(arg, test(lambda(getCatcher(arg))));
+	}
+
 	/**结构类型 */
 	readonly sign = SignTested.Func;
-	/**参数 */
-	readonly arg = new TestedArg();
-	/**值表达式 */
-	readonly value: Tested;
-	/**@param lambda 待探明结构的 Lambda 函数 */
-	constructor(lambda: Lambda) {
-		this.value = test(lambda(getCatcher(this.arg)));
-	}
+	constructor(
+		/**参数 */
+		readonly arg: TestedArg,
+		/**值表达式 */
+		readonly value: Tested,
+	) { }
 	equal(n: Tested, ids: Record<symbol, symbol> = {}): boolean {
 		if (n.sign !== this.sign) return false;
 		ids[this.arg.id] = n.arg.id;
@@ -49,12 +53,10 @@ export class TestedFunc {
 export class TestedCall {
 	/**结构类型 */
 	readonly sign = SignTested.Call;
-	/**
-	 * @param caller 被调用的函数
-	 * @param arg 用来调用的参数
-	 */
 	constructor(
+		/**被调用的函数 */
 		readonly caller: Tested,
+		/**用来调用的参数 */
 		readonly arg: Tested,
 	) { }
 	equal(n: Tested, ids: Record<symbol, symbol> = {}): boolean {
@@ -78,7 +80,13 @@ export class TestedConst {
 	/**结构类型 */
 	readonly sign = SignTested.Const;
 	/**自由标识符的标志 */
-	readonly inner = Symbol('free identifier');
+	readonly inner: symbol;
+	constructor(
+		/**symbol 的名字 */
+		readonly name?: string,
+	) {
+		this.inner = Symbol(name ?? 'free identifier');
+	}
 	/**再得到自己对应的 Lambda 表达式 */
 	rebuild() {
 		return getCatcher(this);
@@ -116,7 +124,22 @@ function getCatcher(testTag: Tested): Lambda {
  */
 export function test(lambda: Lambda): Tested {
 	lambda = solve(lambda);
-	return lambda.testTag ?? new TestedFunc(lambda);
+	return lambda.testTag ?? TestedFunc.test(lambda);
+}
+
+export namespace combinifierTested {
+	export const K = test(a => _ => a);
+	export const testedK = new TestedConst('K');
+	export const S = test(a => b => c => a(c)(b(c)));
+	export const testedS = new TestedConst('S');
+	export const I = test(a => a);
+	export const testedI = new TestedConst('I');
+	export function check(tested: TestedFunc): Tested | null {
+		if (tested.equal(I)) return testedI;
+		if (tested.equal(S)) return testedS;
+		if (tested.equal(K)) return testedK;
+		return null;
+	}
 }
 
 export * from './formatters';
@@ -172,9 +195,12 @@ export function solve(n: Lambda): Lambda {
 	return n;
 }
 
-/**获得一个自由标识符 */
-export function getFreeIdent() {
-	return new TestedConst().rebuild();
+/**
+ * 获得一个自由标识符
+ * @param name 要被显示的名字
+ */
+export function getFreeIdent(name?: string) {
+	return new TestedConst(name).rebuild();
 }
 /**获得无限个自由标识符 */
 export function *getFreeIdents() {

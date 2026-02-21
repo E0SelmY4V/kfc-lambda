@@ -16,7 +16,7 @@ export function deBool(n: Lambda): boolean {
 /**与 */
 export const and: Lambda = a => b => a(b)(a);
 /**或 */
-export const or: Lambda = a => b => a(a)(b);
+export const or: Lambda = a => a(a);
 /**非 */
 export const not: Lambda = a => a(bFalse)(bTrue);
 

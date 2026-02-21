@@ -7,10 +7,13 @@ declare module './formatters';
 
 import { toBb26 } from 'bb26';
 import {
+	combinifierTested,
 	Lambda,
 	SignTested,
 	test,
 	Tested,
+	TestedCall,
+	TestedConst,
 	TestedFunc,
 } from '.';
 
@@ -55,7 +58,8 @@ export class Formatter<T, A extends any[] = []> {
  * @param isCon 是否是自由标识符
  * @returns 字母，自由标识符大写，普通参数小写
  */
-export function chr(id: symbol, ids: symbol[], isCon: boolean) {
+export function chr(id: symbol | string, ids: symbol[], isCon: boolean) {
+	if (typeof id === 'string') return id;
 	if (isCon && !ids.includes(id)) ids.push(id);
 	const chr = toBb26(ids.indexOf(id) + 1);
 	return isCon ? chr : chr.toLowerCase();
@@ -73,6 +77,55 @@ class Symbols {
 	readonly ids: symbol[] = [];
 	readonly cons: symbol[] = [];
 }
+function constChr({ inner, name }: TestedConst, { cons }: { cons: symbol[] }) {
+	return chr(name ?? inner, cons, true);
+}
+
+/**`id` 是否不存在于表达式 `n` */
+function isFree(id: symbol, n: Tested): boolean {
+	switch (n.sign) {
+		case SignTested.Const:
+			return true;
+		case SignTested.Arg:
+			return n.id !== id;
+		case SignTested.Call:
+			return isFree(id, n.arg) && isFree(id, n.caller);
+		case SignTested.Func:
+			return isFree(id, n.value);
+	}
+}
+/**把已知结构的表达式化成组合子表达式 */
+export const combinifierInner = new Formatter<Tested, []>(chose => ({
+	func(tested) {
+		const checked = combinifierTested.check(tested);
+		if (checked !== null) return checked;
+		if (isFree(tested.arg.id, tested.value)) {
+			return new TestedCall(combinifierTested.testedK, chose(tested.value));
+		}
+		const { value } = tested;
+		if (value.sign === SignTested.Call) {
+			return new TestedCall(
+				new TestedCall(combinifierTested.testedS, this.func(new TestedFunc(tested.arg, value.caller))),
+				this.func(new TestedFunc(tested.arg, value.arg)),
+			);
+		}
+		return this.func(new TestedFunc(tested.arg, chose(tested.value)));
+	},
+	call({ arg, caller }) {
+		return new TestedCall(chose(caller), chose(arg));
+	},
+	arg: n => n,
+	const: n => n,
+}), () => []);
+/**输出为组合子表达式 */
+export const combinifier = {
+	format(lambda: Tested | Lambda) {
+		return stdLambdaifier.format(combinifierInner.format(lambda));
+	},
+	log(lambda: Tested | Lambda) {
+		console.log(this.format(lambda));
+	},
+};
 
 /**输出为 js 的 Lambda 表达式 */
 export const jsifier = new Formatter<string, [symbols: Symbols]>(chose => ({
@@ -86,7 +139,7 @@ export const jsifier = new Formatter<string, [symbols: Symbols]>(chose => ({
 		return `${callerStr}(${chose(arg, symbols)})`;
 	},
 	arg: ({ id }, { ids }) => chr(id, ids, false),
-	const: ({ inner }, { cons }) => chr(inner, cons, true),
+	const: constChr,
 }), () => [new Symbols()]);
 
 const [lambdaifier, stdLambdaifier] = [false, true].map(std => new Formatter<string, [symbols: Symbols]>(chose => ({
@@ -100,7 +153,7 @@ const [lambdaifier, stdLambdaifier] = [false, true].map(std => new Formatter<str
 		return std ? `(${callerStr} ${argStr})` : `((${callerStr}) (${argStr}))`;
 	},
 	arg: ({ id }, { ids }) => chr(id, ids, false),
-	const: ({ inner }, { cons }) => chr(inner, cons, true),
+	const: constChr,
 }), () => [new Symbols()]));
 
 /**缩进器 */
@@ -143,10 +196,10 @@ const [kfcifier, numKfcifier] = [false, true].map(num => new Formatter<string, [
 			? indenter(argDepth.toString())
 			: 'K'.repeat(argDepth) + 'F';
 	},
-	const: ({ inner }, indenter, { cons }) => (num
+	const: (tested, indenter, symbols) => (num
 		? indenter
 		: (n: string) => n
-	)(chr(inner, cons, true)),
+	)(constChr(tested, symbols)),
 }), () => [getIndenter(), { ids: {}, cons: [] }, 0]));
 
 export {

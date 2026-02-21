@@ -60,7 +60,12 @@ const pred = gl(x => _ => x);
 但是如果你用了这个库，它提供了一些 `log` 函数和其他设施，你不仅可以看懂一个 Lmabda 表达式的内部，还可以用各种不同的格式看懂！
 
 ```ts
-import { jsifier, stdLambdaifier, Lambda } from 'lambda-calculus-with-js';
+import {
+    jsifier,
+    stdLambdaifier,
+    combinifier,
+    Lambda,
+} from 'lambda-calculus-with-js';
 
 const plus: Lambda = a => b => f => x => a(f)(b(f)(x));
 const n2: Lambda = f => x => f(f(x));
@@ -72,6 +77,9 @@ jsifier.log(a);
 
 stdLambdaifier.log(a);
 // λa.λb.λc.(b (b ((a b) c)))
+
+combinifier.log(n2);
+// ((S ((S (K S)) ((S (K K)) I))) ((S ((S (K S)) ((S (K K)) I))) (K I)))
 ```
 
 ## 惰性求值的 Y 组合子
@@ -123,5 +131,9 @@ const cons: Lambda = nil => F(A)(F(B)(nil));
 
 stdLambdaifier.log(cons),
 // λa.((A B) ((A C) a))
+
+const nil = getFreeIdent('nil');
+stdLambdaifier.log(x => x(x)(nil));
+// λa.((a a) nil)
 ```
 
