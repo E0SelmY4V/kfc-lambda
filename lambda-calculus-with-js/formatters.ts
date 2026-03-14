@@ -21,12 +21,29 @@ import {
 export type FormatterMap<T, A extends any[]> = {
 	[I in SignTested]: (this: FormatterMap<T, A>, tested: Tested & { sign: I }, ...args: A) => T;
 };
+
+/**
+ * 输出器
+ * @template T 格式化后的类型
+ */
+abstract class Logger<T> {
+	/**进行格式化 */
+	abstract format(this: this, lambda: Tested | Lambda): T;
+	/**输出格式化后的东西 */
+	log(this: this, lambda: Tested): void;
+	log(this: this, lambda: Lambda): Lambda;
+	log(this: this, lambda: Tested | Lambda): Lambda | void {
+		console.log(this.format(lambda));
+		if ('sign' in lambda) return;
+		return lambda;
+	}
+}
 /**
  * 格式化器
  * @template T 格式化后的类型
  * @template A 格式化函数需要的额外参数
  */
-export class Formatter<T, A extends any[] = []> {
+export class Formatter<T, A extends any[] = []> extends Logger<T> {
 	/**各个结构的格式化函数 */
 	protected readonly map: FormatterMap<T, A>;
 	/**可以自动判断结构的格式化函数 */
@@ -39,15 +56,11 @@ export class Formatter<T, A extends any[] = []> {
 		mapFn: (chose: (tested: Tested, ...args: A) => T) => FormatterMap<T, A>,
 		protected readonly initer: () => A,
 	) {
+		super();
 		this.map = mapFn(this.chose);
 	}
-	/**进行格式化 */
-	format(this: this, lambda: Tested | Lambda) {
+	override format(this: this, lambda: Tested | Lambda) {
 		return this.chose('sign' in lambda ? lambda : test(lambda), ...this.initer());
-	}
-	/**输出格式化后的东西 */
-	log(this: this, lambda: Tested | Lambda) {
-		console.log(this.format(lambda));
 	}
 }
 
@@ -118,14 +131,11 @@ export const combinifierInner = new Formatter<Tested, []>(chose => ({
 	const: n => n,
 }), () => []);
 /**输出为组合子表达式 */
-export const combinifier = {
-	format(lambda: Tested | Lambda) {
+export const combinifier = new class Combinifier extends Logger<string> {
+	override format(lambda: Tested | Lambda) {
 		return stdLambdaifier.format(combinifierInner.format(lambda));
-	},
-	log(lambda: Tested | Lambda) {
-		console.log(this.format(lambda));
-	},
-};
+	}
+}();
 
 /**输出为 js 的 Lambda 表达式 */
 export const jsifier = new Formatter<string, [symbols: Symbols]>(chose => ({
