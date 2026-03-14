@@ -13,11 +13,11 @@ t('readme', t => {
 	);
 	t.equal(
 		stdLambdaifier.format(a),
-		'λa.λb.λc.(b (b ((a b) c)))',
+		'λa.λb.λc.(b (b (a b c)))',
 	);
 	t.equal(
 		combinifier.format(n2),
-		'((S ((S (K S)) ((S (K K)) I))) ((S ((S (K S)) ((S (K K)) I))) (K I)))',
+		'(S (S (K S) (S (K K) I)) (S (S (K S) (S (K K) I)) (K I)))',
 	);
 
 	const n1: Lambda = f => x => f(x);
@@ -42,13 +42,13 @@ t('readme', t => {
 	const cons: Lambda = nil => F(A)(F(B)(nil));
 	t.equal(
 		stdLambdaifier.format(cons),
-		'λa.((A B) ((A C) a))',
+		'λa.(A B (A C a))',
 	);
 
 	const nil = getFreeIdent('nil');
 	t.equal(
 		stdLambdaifier.format(x => x(x)(nil)),
-		'λa.((a a) nil)',
+		'λa.(a a nil)',
 	);
 
 	t.end();

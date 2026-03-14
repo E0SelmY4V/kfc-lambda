@@ -76,10 +76,10 @@ jsifier.log(a);
 // a => b => c => b(b(a(b)(c)))
 
 stdLambdaifier.log(a);
-// λa.λb.λc.(b (b ((a b) c)))
+// λa.λb.λc.(b (b (a b c)))
 
 combinifier.log(n2);
-// ((S ((S (K S)) ((S (K K)) I))) ((S ((S (K S)) ((S (K K)) I))) (K I)))
+// (S (S (K S) (S (K K) I)) (S (S (K S) (S (K K) I)) (K I)))
 ```
 
 ## 惰性求值的 Y 组合子
@@ -130,10 +130,10 @@ const [F, A, B] = getFreeIdents();
 const cons: Lambda = nil => F(A)(F(B)(nil));
 
 stdLambdaifier.log(cons),
-// λa.((A B) ((A C) a))
+// λa.(A B (A C a))
 
 const nil = getFreeIdent('nil');
 stdLambdaifier.log(x => x(x)(nil));
-// λa.((a a) nil)
+// λa.(a a nil)
 ```
 

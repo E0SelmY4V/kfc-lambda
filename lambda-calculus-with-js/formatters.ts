@@ -141,7 +141,9 @@ export const combinifier = new class Combinifier extends Logger<string> {
 export const jsifier = new Formatter<string, [symbols: Symbols]>(chose => ({
 	func({ arg, value }, symbols) {
 		symbols.ids.push(arg.id);
-		return `${this.arg(arg, symbols)} => ${chose(value, symbols)}`;
+		const res = `${this.arg(arg, symbols)} => ${chose(value, symbols)}`;
+		symbols.ids.pop();
+		return res;
 	},
 	call({ caller, arg }, symbols) {
 		let callerStr = chose(caller, symbols);
@@ -155,7 +157,9 @@ export const jsifier = new Formatter<string, [symbols: Symbols]>(chose => ({
 const [lambdaifier, stdLambdaifier] = [false, true].map(std => new Formatter<string, [symbols: Symbols]>(chose => ({
 	func({ arg, value }, symbols) {
 		symbols.ids.push(arg.id);
-		return `λ${this.arg(arg, symbols)}.${chose(value, symbols)}`;
+		const res = `λ${this.arg(arg, symbols)}.${chose(value, symbols)}`;
+		symbols.ids.pop();
+		return res;
 	},
 	call({ caller, arg }, symbols) {
 		const callerStr = chose(caller, symbols);
