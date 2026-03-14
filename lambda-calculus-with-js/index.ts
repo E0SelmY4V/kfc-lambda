@@ -127,6 +127,11 @@ export function test(lambda: Lambda): Tested {
 	return lambda.testTag ?? TestedFunc.test(lambda);
 }
 
+/**判断两个 lambda 表达式是否相等 */
+export function isEqual(a: Lambda, b: Lambda): boolean {
+	return test(a).equal(test(b));
+}
+
 export namespace combinifierTested {
 	export const K = test(a => _ => a);
 	export const testedK = new TestedConst('K');
