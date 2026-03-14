@@ -1,0 +1,101 @@
+export function getSeler(total: number, num: number): Lambda {
+	if (total === 1) return I;
+	if (total === 2 && num === 1) return K;
+	if (num === 1) return S(getSeler(3, 2))(getSeler(total - 1, 1));
+	return K(getSeler(total - 1, num - 1));
+}
+// for (let total = 1; total <= 5; ++total) {
+// 	for (let num = 1; num <= total; ++num) {
+// 		jsifier.log(getSeler(total, num));
+// 	}
+// }
+
+export const bTrue = K;
+export const bFalse = S(K);
+export const call = S(bFalse); // \a.\b.(a b)
+export const and = S(S)(K);
+export const or = S(I)(I);
+export const not = S(S(I)(K(bFalse)))(K(bTrue));
+export const n0 = bFalse;
+export const n1 = S(bFalse);
+export const n2 = call(S(I));
+export const callSelf = S(I)(I);
+/**
+ * ```
+ *   \a.(A (B a))
+ * = (S (K A) B)
+ *
+ * 所以同理
+ *
+ *   \b.\a.(S (K a) b)
+ * = \a.(S (K a))
+ * = (S (K S) K)
+ * ```
+ */
+export const call2: Lambda = S(K(S))(K);
+/**
+ * ```
+ *   \x.\y.\z.\w.(x z w (y z w))
+ * = \x.(S \z.\yz.\w.(x z w (yz w))
+ * = \x.(S \z.\yz.\w.(S (x z) yz w)
+ * = \x.(S \z.(S (x z))
+ * = \x.(S (call2 S x))
+ * = (call2 S (call2 S))
+ * ```
+ */
+export const S2: Lambda = callSelf(call2(S));
+
+// const n = getFreeIdent();
+
+/*
+S K = I
+I * = *
+K * @ = *
+S S = λa.λb.λc.((b c) ((a b) c))
+S I = λa.λb.(b (a b))
+S I I = λp1.(p1 p1)
+S I K = λp1.(p1 λp2.p1)
+S I S = λp1.(p1 λp2.λp3.((p1 p3) (p2 p3)))
+S S I = λp1.λp2.((p1 p2) (p1 p2))
+S S K = λp1.λp2.((p1 p2) p1)
+S S S = λp1.λp2.((p1 p2) λp3.((p1 p3) (p2 p3)))
+
+S I I \a.b = λp1.(p1 p1) \a.b = (\a.b \a.b) = b[a = \a.b]
+S I K \a.b = λp1.(p1 λp2.p1) \a.b = b[\a = \p2.\a.b]
+S I S \a.b
+= λp1.(p1 λp2.λp3.((p1 p3) (p2 p3))) \a.b
+= (\a.b \p2.\p3.(b[a = p3] (p2 p3)))
+= b[a = \p2.\p3.(b[a = p3] (p2 p3))]
+
+S S I n = S I I
+S S K n = λp1.(p1 n)
+S S S n = λp1.(p1 λp2.(p2 (p1 p2)))
+S S K n \a.b b[a = n]
+S S S n \a.b
+S S I \a.b
+S S K \a.b
+S S S \a.b
+S S I \a.b n
+S S K \a.b n
+S S S \a.b n
+
+\x.x = S K
+\x.(x x) = S I I
+\x.(x (x x))
+= (S S I) I
+= λp2.(p2 λp3.(p3 (p2 p3)))
+
+\x.((x x) x) =
+
+
+ S S K a b = (
+
+\a.a
+(a b)
+n
+
+N \a.E
+\a.(N E)
+
+*/
+

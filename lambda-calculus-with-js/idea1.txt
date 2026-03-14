@@ -96,6 +96,18 @@ c = λP.λz.λw.(P (z w))
 a = λs.λr.λn.(s (n r))
 
 
+--------------
+
+((a (b c)) d)
+c c a c b c d
+
+c	\A.\B		(A B)
+c	\C.\D.\B	((C D) B)
+a	\D.\B		((c D) B)
+c	\E.\F.\B.	((c (E F)) B)
+b	\F.\B.		((c (b F)) B)
+c	\B.			((c (b c)) B)
+d				((c (b c)) d)
 
 --------------
 
