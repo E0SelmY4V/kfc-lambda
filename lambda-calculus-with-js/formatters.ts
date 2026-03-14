@@ -150,7 +150,12 @@ const [lambdaifier, stdLambdaifier] = [false, true].map(std => new Formatter<str
 	call({ caller, arg }, symbols) {
 		const callerStr = chose(caller, symbols);
 		const argStr = chose(arg, symbols);
-		return std ? `(${callerStr} ${argStr})` : `((${callerStr}) (${argStr}))`;
+		return std
+			? `(${caller instanceof TestedCall
+				? callerStr.slice(1, -1)
+				: callerStr
+			} ${argStr})`
+			: `((${callerStr}) (${argStr}))`;
 	},
 	arg: ({ id }, { ids }) => chr(id, ids, false),
 	const: constChr,
