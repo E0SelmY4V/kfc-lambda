@@ -123,7 +123,7 @@ jsifier.log(n24);
 
 不过，这对于正在使用本库的你来说就是小儿科！你想要多少个自由标识符都行，他们都会以大写字母来表示。
 
-```
+```ts
 import { getFreeIdents, Lambda, stdLambdaifier } from 'lambda-calculus-with-js'
 
 const [F, A, B] = getFreeIdents();
